@@ -1,7 +1,7 @@
 modLoader = "javafml"
 loaderVersion = "[47,)"
 license = "MIT"
-issueTrackerURL = "https://github.com/your-org/create-recipe-hooks/issues"
+issueTrackerURL = "https://github.com/Aar0w/create-recipe-hooks/issues"
 
 [[mods]]
     modId = "createrecipehooks"
