@@ -1,0 +1,23 @@
+{
+  "required": true,
+  "package": "dev.createrecipehooks.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "createrecipehooks.refmap.json",
+  "mixins": [
+    "basin.MixinBasinRecipe",
+    "cei.MixinCeiPrinterBlockEntity",
+    "crafter.MixinRecipeGridHandler",
+    "crusher.MixinCrushingWheelController",
+    "drain.MixinGenericItemEmptying",
+    "fan.MixinRecipeApplier",
+    "millstone.MixinMillstoneBlockEntity",
+    "sandpaper.MixinSandPaperPolishingRecipe",
+    "saw.MixinSawBlockEntity",
+    "sequenced.MixinSequencedAssemblyGetRecipe",
+    "sequenced.MixinSequencedAssemblyRecipe",
+    "spout.MixinFillingBySpout"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

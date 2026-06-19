@@ -1,0 +1,28 @@
+modLoader = "javafml"
+loaderVersion = "[47,)"
+license = "MIT"
+issueTrackerURL = "https://github.com/your-org/create-recipe-hooks/issues"
+
+[[mods]]
+    modId = "createrecipehooks"
+    version = "${file.jarVersion}"
+    displayName = "Create Recipe Hooks"
+    logoFile = "crhlogo.png"
+    description = '''
+        Provides a unified API for listening to Create (and addon) recipe completions.
+        Intended for use by FTB Quests, KubeJS, and other integration mods.
+    '''
+
+[[dependencies.createrecipehooks]]
+    modId = "forge"
+    mandatory = true
+    versionRange = "[47,)"
+    ordering = "NONE"
+    side = "BOTH"
+
+[[dependencies.createrecipehooks]]
+    modId = "create"
+    mandatory = true
+    versionRange = "[6.0.8,)"
+    ordering = "AFTER"
+    side = "BOTH"
