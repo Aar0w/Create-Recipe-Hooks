@@ -1,6 +1,6 @@
 # Create Recipe Hooks (CRH)
 
-A server-side API mod for **Minecraft 1.20.1 / Forge 47+** that fires a unified Forge event whenever a recipe completes in any **Create 6.0.8+** machine (and some addon machines). Lets quests, scripts, and other mods react to "player smelted / crushed / mixed X" — with player attribution via UUID.
+A server-side API mod for **Minecraft 1.20.1 / Forge 47+** that fires a unified Forge event whenever a recipe completes in any **Create 6.0.8+** machine (and some addon machines). Lets quests, scripts, and other mods react to "player smelted / crushed / mixed X", with player attribution via UUID.
 
 ## Requirements
 
@@ -37,25 +37,25 @@ The event fires **server-side only**.
 | `getItemInputs()` | `List<ItemStack>` | Input items (available for Fan, Sequenced Assembly, CEI Printer) |
 | `getFluidOutputs()` | `List<FluidAmount>` | Fluid outputs (Basin, Item Drain) |
 | `getBlockPos()` | `BlockPos` | Position of the machine. `null` for Fan (item in world), belt Deployer, Sand Paper |
-| `getPlayer()` | `ServerPlayer` | Only for `SAND_PAPER` (manual use). `null` for everything else — use metadata instead |
+| `getPlayer()` | `ServerPlayer` | Only for `SAND_PAPER` (manual use). `null` for everything else; use metadata instead |
 | `getMetadata()` | `Map<String, Object>` | Metadata keys (see below) |
 | `getTimestamp()` | `long` | `System.nanoTime()` at the moment of the event |
 
 ## Sources (`RecipeSource`)
 
-### Active — events are fired
+### Active sources (events are fired)
 
 | Source | Machine | `owner_uuid` in metadata | Who it refers to |
 |---|---|---|---|
 | `BASIN` | Mixer / Compactor / pressing in a Basin / CEI Infuser | ✅ | who placed the Basin |
 | `MECHANICAL_PRESS` | Press (belt and world modes) | ✅ | who placed the Press |
 | `MILLSTONE` | Millstone | ✅ | who placed the Millstone |
-| `CRUSHING_WHEEL` | Crushing Wheels | ✅ | **who threw the item** into the wheels (not an owner — the controller is never player-placed). Items from hoppers/machines carry no UUID |
+| `CRUSHING_WHEEL` | Crushing Wheels | ✅ | **who threw the item** into the wheels (not an owner, since the controller is never player-placed). Items from hoppers/machines carry no UUID |
 | `MECHANICAL_SAW` | Saw | ✅ | who placed the Saw |
 | `MECHANICAL_CRAFTER` | Mechanical Crafter | ✅ | who placed the output crafter (the last one in the chain) |
 | `DEPLOYER_BELT` | Deployer over a belt | ✅ | the Deployer's owner (Create's built-in field) |
-| `SAND_PAPER` | Sand Paper | — | `getPlayer()` is non-null on manual use |
-| `SEQUENCED_ASSEMBLY` | Final step of a Sequenced Assembly | — | intermediate steps do not fire events |
+| `SAND_PAPER` | Sand Paper | no | `getPlayer()` is non-null on manual use |
+| `SEQUENCED_ASSEMBLY` | Final step of a Sequenced Assembly | no | intermediate steps do not fire events |
 | `FAN_BLASTING` | Fan + lava/burner (both smelting **and** blasting recipes) | ✅ | who placed the Fan |
 | `FAN_SMOKING` | Fan + fire | ✅ | who placed the Fan |
 | `FAN_SPLASHING` | Fan + water | ✅ | who placed the Fan |
@@ -63,11 +63,11 @@ The event fires **server-side only**.
 | `SPOUT_FILLING` | Spout | ✅ | who placed the Spout. `getRecipeId()` is `null` when filling via fluid capability (buckets and other containers without a `FillingRecipe`) |
 | `ITEM_DRAIN_EMPTYING` | Item Drain | ✅ | who placed the Drain |
 | `CEI_PRINTER` | Printer from Create Enchantment Industry | ✅ | who placed the Printer (only when CEI is installed) |
-| `UNKNOWN` | Unrecognized addon going through `RecipeApplier` | ✅ when context is known | — |
+| `UNKNOWN` | Unrecognized addon going through `RecipeApplier` | ✅ when context is known | n/a |
 
 Fan events cover **both modes**: items on a belt and items lying in the air current in the world.
 
-### Reserved — NO events are fired (v1)
+### Reserved sources (NO events are fired in v1)
 
 `DEPLOYER_DIRECT`, `MANUAL_APPLICATION`, `CEI_GRINDSTONE`, `CEI_INFUSER` (events arrive as `BASIN`), `CEI_SALVAGING` (arrive as `FAN_*`), `POWERGRID_MAGNETIZING`. Filtering on these values will never match.
 
@@ -81,7 +81,7 @@ The owner UUID is written into the block entity's NBT when a player places the b
 
 ## Script examples (KubeJS + EventJS)
 
-All examples are verified in-game. The files live in [Script_Test/](Script_Test/). Place them in `kubejs/server_scripts/`.
+All examples are verified in-game. Place them in `kubejs/server_scripts/`.
 
 ### 1. Basic: an emerald for any recipe of a machine
 
@@ -125,7 +125,7 @@ NativeEvents.onEvent(
 
 ### 3. Counting batch quantity (Crushing Wheel)
 
-A single batch may contain multiple items — sum `getCount()`:
+A single batch may contain multiple items, so sum `getCount()`:
 
 ```javascript
 NativeEvents.onEvent(
@@ -152,7 +152,7 @@ NativeEvents.onEvent(
 
 ### 4. Accumulating a counter across events (via player NBT)
 
-The Press processes 1 item per event. The counter is stored in `player.getPersistentData()` — it survives server restarts:
+The Press processes 1 item per event. The counter is stored in `player.getPersistentData()`, which survives server restarts:
 
 ```javascript
 NativeEvents.onEvent(
@@ -187,7 +187,7 @@ NativeEvents.onEvent(
 
 ### 5. FTB Quests: complete a quest on any recipe of a machine
 
-Verified on a dedicated server. Works the same for `MILLSTONE`, `SPOUT_FILLING`, `DEPLOYER_BELT` — only the source name and quest ID change:
+Verified on a dedicated server. Works the same for `MILLSTONE`, `SPOUT_FILLING`, `DEPLOYER_BELT`: only the source name and quest ID change.
 
 ```javascript
 NativeEvents.onEvent(
@@ -216,8 +216,8 @@ NativeEvents.onEvent(
 
 The Spout fills items in two different ways, and both fire `SPOUT_FILLING`:
 
-- **Recipe path** — items with a `FillingRecipe` (honey bottle, blaze cake, ...): `getRecipeId()` returns the recipe ID, e.g. `create:filling/honey_bottle`.
-- **Capability path** — buckets and any fluid-container item without a recipe: `getRecipeId()` returns **`null`** (filling a bucket with water is not a recipe).
+- **Recipe path:** items with a `FillingRecipe` (honey bottle, blaze cake, ...). `getRecipeId()` returns the recipe ID, e.g. `create:filling/honey_bottle`.
+- **Capability path:** buckets and any fluid-container item without a recipe. `getRecipeId()` returns **`null`** (filling a bucket with water is not a recipe).
 
 Do not filter Spout events by recipe ID unless you specifically want recipe-based fills only:
 
@@ -227,7 +227,7 @@ NativeEvents.onEvent(
     event => {
         if (event.getSource().name() !== 'SPOUT_FILLING') return;
 
-        // recipeId is null for capability fills (buckets) — this is normal
+        // recipeId is null for capability fills (buckets); this is normal
         const recipeId = event.getRecipeId();
         console.info('[Quest/Spout] Recipe: ' + (recipeId ? recipeId.toString() : 'null'));
 
@@ -247,12 +247,12 @@ NativeEvents.onEvent(
 
 ## Scripting pitfalls
 
-- **Do not declare `const`/`let` at the top level of a file.** KubeJS loads all server_scripts into one shared scope — identical names in two files cause `TypeError: redeclaration of const`. Keep all declarations inside the callback.
+- **Do not declare `const`/`let` at the top level of a file.** KubeJS loads all server_scripts into one shared scope, so identical names in two files cause `TypeError: redeclaration of const`. Keep all declarations inside the callback.
 - **`getItemOutputs()` is a `java.util.List`**, not a JS array. Iterate via `.size()` / `.get(i)`.
-- **JS variables do not persist across events.** A `new Map()` at file level will not keep your counter — use `player.getPersistentData()` (example 4).
-- **Always null-check `owner_uuid`** — the machine may have been placed by a non-player, and an item in the Crushing Wheel may have come from a hopper.
-- **The player may be offline** when the recipe completes — `playerList.getPlayer()` returns `null`.
-- **`getRecipeId()` may be `null`** for Spout capability fills and Item Drain capability emptying — null-check before calling `.toString()`.
+- **JS variables do not persist across events.** A `new Map()` at file level will not keep your counter; use `player.getPersistentData()` (example 4).
+- **Always null-check `owner_uuid`.** The machine may have been placed by a non-player, and an item in the Crushing Wheel may have come from a hopper.
+- **The player may be offline** when the recipe completes, in which case `playerList.getPlayer()` returns `null`.
+- **`getRecipeId()` may be `null`** for Spout capability fills and Item Drain capability emptying, so null-check before calling `.toString()`.
 - FTB Quests command: `ftbquests change_progress <player> complete <quest_id>`.
 
 ## Usage from Java
