@@ -268,5 +268,8 @@ Public API: `dev.createrecipehooks.api` (`RecipeFinishedContext`, `RecipeSource`
 
 ## License
 
+Copyright (c) 2026 Aarow
+
 LGPL-3.0-or-later. You may use this mod in modpacks and link against its API freely.
 Forks and derivative mods must remain open source under the same license with attribution.
+See [LICENSE](LICENSE) (LGPL-3.0) and [COPYING](COPYING) (GPL-3.0).
