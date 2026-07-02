@@ -1,0 +1,119 @@
+package dev.createrecipehooks.mixin.press;
+
+import com.simibubi.create.content.kinetics.press.MechanicalPressBlockEntity;
+import dev.createrecipehooks.api.ICrhOwnable;
+import dev.createrecipehooks.internal.CrhOwnerContext;
+import net.minecraft.nbt.CompoundTag;
+import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.UUID;
+
+/**
+ * Adds {@link ICrhOwnable} UUID tracking to {@link MechanicalPressBlockEntity}.
+ *
+ * <p>UUID is set when the press is placed by a player
+ * ({@link dev.createrecipehooks.neoforge.NeoForgeAdapter#onOwnableBlockPlaced}).
+ *
+ * <h3>Belt mode — tryProcessOnBelt</h3>
+ * <p>Confirmed via javap (Create 6.0.8), offset 78:
+ * {@code invokestatic RecipeApplier.applyRecipeOn(Level, ItemStack, Recipe, Z) → List}.
+ * {@link MixinRecipeApplier} fires the {@code MECHANICAL_PRESS} event at RETURN of
+ * that call; {@link CrhOwnerContext} carries the UUID into it.
+ *
+ * <h3>World mode — tryProcessInWorld</h3>
+ * <p>Calls the same {@code applyRecipeOn(Level, ItemStack, Recipe, Z)} overload at
+ * offset 105 (after an earlier {@code applyRecipeOn(ItemEntity, Recipe, Z)} at offset 72
+ * which uses a different signature and is not hooked by {@link MixinRecipeApplier}).
+ */
+@Mixin(value = MechanicalPressBlockEntity.class, remap = false)
+public abstract class MixinMechanicalPressBlockEntity implements ICrhOwnable {
+
+    @Unique private @Nullable UUID crh$ownerUUID = null;
+
+    @Override public @Nullable UUID crh$getOwnerUUID() { return crh$ownerUUID; }
+    @Override public void crh$setOwnerUUID(@Nullable UUID uuid) { this.crh$ownerUUID = uuid; }
+
+    @Inject(method = "write(Lnet/minecraft/nbt/CompoundTag;Z)V", at = @At("TAIL"))
+    private void crh$writeOwner(CompoundTag tag, boolean clientPacket, CallbackInfo ci) {
+        if (!clientPacket && crh$ownerUUID != null)
+            tag.putUUID("crh:owner", crh$ownerUUID);
+    }
+
+    @Inject(method = "read(Lnet/minecraft/nbt/CompoundTag;Z)V", at = @At("TAIL"))
+    private void crh$readOwner(CompoundTag tag, boolean clientPacket, CallbackInfo ci) {
+        if (!clientPacket && tag.hasUUID("crh:owner"))
+            crh$ownerUUID = tag.getUUID("crh:owner");
+    }
+
+    // ── Belt mode ─────────────────────────────────────────────────────────────
+
+    @Inject(
+        method = "tryProcessOnBelt(" +
+                 "Lcom/simibubi/create/content/kinetics/belt/transport/TransportedItemStack;" +
+                 "Ljava/util/List;Z)Z",
+        at = @At(
+            value = "INVOKE",
+            target = "Lcom/simibubi/create/foundation/recipe/RecipeApplier;" +
+                     "applyRecipeOn(Lnet/minecraft/world/level/Level;" +
+                     "Lnet/minecraft/world/item/ItemStack;" +
+                     "Lnet/minecraft/world/item/crafting/Recipe;Z)Ljava/util/List;"
+        )
+    )
+    private void crh$setBeltPressOwner(CallbackInfoReturnable<Boolean> cir) {
+        CrhOwnerContext.set(crh$ownerUUID);
+    }
+
+    @Inject(
+        method = "tryProcessOnBelt(" +
+                 "Lcom/simibubi/create/content/kinetics/belt/transport/TransportedItemStack;" +
+                 "Ljava/util/List;Z)Z",
+        at = @At(
+            value = "INVOKE",
+            target = "Lcom/simibubi/create/foundation/recipe/RecipeApplier;" +
+                     "applyRecipeOn(Lnet/minecraft/world/level/Level;" +
+                     "Lnet/minecraft/world/item/ItemStack;" +
+                     "Lnet/minecraft/world/item/crafting/Recipe;Z)Ljava/util/List;",
+            shift = At.Shift.AFTER
+        )
+    )
+    private void crh$clearBeltPressOwner(CallbackInfoReturnable<Boolean> cir) {
+        CrhOwnerContext.clear();
+    }
+
+    // ── World mode ────────────────────────────────────────────────────────────
+
+    @Inject(
+        method = "tryProcessInWorld(Lnet/minecraft/world/entity/item/ItemEntity;Z)Z",
+        at = @At(
+            value = "INVOKE",
+            target = "Lcom/simibubi/create/foundation/recipe/RecipeApplier;" +
+                     "applyRecipeOn(Lnet/minecraft/world/level/Level;" +
+                     "Lnet/minecraft/world/item/ItemStack;" +
+                     "Lnet/minecraft/world/item/crafting/Recipe;Z)Ljava/util/List;"
+        )
+    )
+    private void crh$setWorldPressOwner(CallbackInfoReturnable<Boolean> cir) {
+        CrhOwnerContext.set(crh$ownerUUID);
+    }
+
+    @Inject(
+        method = "tryProcessInWorld(Lnet/minecraft/world/entity/item/ItemEntity;Z)Z",
+        at = @At(
+            value = "INVOKE",
+            target = "Lcom/simibubi/create/foundation/recipe/RecipeApplier;" +
+                     "applyRecipeOn(Lnet/minecraft/world/level/Level;" +
+                     "Lnet/minecraft/world/item/ItemStack;" +
+                     "Lnet/minecraft/world/item/crafting/Recipe;Z)Ljava/util/List;",
+            shift = At.Shift.AFTER
+        )
+    )
+    private void crh$clearWorldPressOwner(CallbackInfoReturnable<Boolean> cir) {
+        CrhOwnerContext.clear();
+    }
+}

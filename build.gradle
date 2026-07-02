@@ -1,0 +1,196 @@
+plugins {
+    id 'java'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'org.spongepowered.mixin' version '0.7.+'
+}
+
+version = "${mod_version}+create-${create_version}"
+group = "dev.createrecipehooks"
+base { archivesName = "create-recipe-hooks" }
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+    withSourcesJar()
+    withJavadocJar()
+}
+
+minecraft {
+    mappings channel: 'official', version: "${minecraft_version}"
+    copyIdeResources = true
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'crh.debug', 'true'
+            mods {
+                createrecipehooks { source sourceSets.main }
+            }
+        }
+        server {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'debug'
+            property 'crh.debug', 'true'
+            args '--nogui'
+            mods {
+                createrecipehooks { source sourceSets.main }
+            }
+        }
+    }
+}
+
+repositories {
+    maven {
+        name = "NeoForged"
+        url = "https://maven.neoforged.net/releases"
+    }
+    maven {
+        name = "Forge"
+        url = "https://maven.minecraftforge.net"
+    }
+    maven {
+        name = "Create"
+        url = "https://maven.createmod.net"
+    }
+    maven {
+        name = "Jitpack"
+        url = "https://jitpack.io"
+    }
+    maven {
+        // MixinExtras for @WrapOperation and @Local
+        name = "MixinExtras"
+        url = "https://repo.spongepowered.org/repository/maven-public/"
+    }
+}
+
+dependencies {
+    minecraft "net.neoforged:forge:${minecraft_version}-${forge_version}"
+
+    // Create for NeoForge 1.20.1
+    implementation fg.deobf("com.simibubi.create:create-${minecraft_version}:${create_version}:all") {
+        transitive = false
+    }
+
+    // Create 6.x compile-only dependencies (not bundled in :all)
+    compileOnly fg.deobf("net.createmod.catnip:Catnip-Forge-1.20.1:0.8.44") { transitive = false }
+    compileOnly fg.deobf("net.createmod.ponder:Ponder-Forge-1.20.1:1.0.92") { transitive = false }
+
+    // MixinExtras — the forge artifact bundles annotations in a nested JAR that fg.deobf() cannot
+    // extract onto javac's classpath, so we compile against the inner JAR extracted to libs/.
+    // The forge artifact is still needed on the annotation-processor path (runtime loading).
+    compileOnly files('libs/MixinExtras-0.3.5.jar')
+    annotationProcessor "io.github.llamalad7:mixinextras-forge:${mixinextras_version}"
+
+    // Soft-dependency compile stubs — present only for the Mixin AP to resolve @Mixin targets.
+    // These JARs are NOT bundled; the mixins that target them use require=0 and are silently
+    // skipped at runtime when the respective mod is absent.
+    compileOnly files('libs/create_enchantment_industry-1.3.3-for-create-6.0.6.jar')
+
+    // Mixin annotation processor + annotations on javac classpath.
+    // ForgeGradle does not expose Mixin annotations from the embedded Forge JARs to javac,
+    // so we add them explicitly. compileOnly ensures they are not bundled (Forge provides them
+    // at runtime). Without this, @Mixin.require() is not resolvable at compile time.
+    compileOnly 'org.spongepowered:mixin:0.8.5'
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+}
+
+// ── Mixin refmap ─────────────────────────────────────────────────────────────
+
+mixin {
+    add sourceSets.main, 'createrecipehooks.refmap.json'
+    config 'createrecipehooks.mixins.json'
+}
+
+// ── Jar manifest ─────────────────────────────────────────────────────────────
+
+jar {
+    manifest {
+        attributes([
+            'Specification-Title'     : 'createrecipehooks',
+            'Specification-Vendor'    : 'createrecipehooks',
+            'Specification-Version'   : '1',
+            'Implementation-Title'    : project.name,
+            'Implementation-Version'  : project.jar.archiveVersion,
+            'Implementation-Vendor'   : 'createrecipehooks',
+            'MixinConfigs'            : 'createrecipehooks.mixins.json'
+        ])
+    }
+}
+
+// ── Maven publishing ─────────────────────────────────────────────────────────
+//
+// Usage:
+//   ./gradlew publishToMavenLocal          → installs to ~/.m2 for local dev
+//   ./gradlew publish                      → publishes to configured remote
+//
+// Consumer build.gradle (after local install or remote publish):
+//   repositories { mavenLocal() }          // or the remote URL below
+//   dependencies {
+//       implementation "dev.createrecipehooks:create-recipe-hooks:${version}"
+//   }
+
+publishing {
+    publications {
+        mavenForge(MavenPublication) {
+            groupId    = project.group
+            artifactId = base.archivesName.get()   // "create-recipe-hooks"
+            version    = project.version           // "1.0.0+create-6.0.8-291"
+
+            // Main jar, sources, and javadoc (built by java { withSourcesJar/withJavadocJar })
+            artifact jar
+            artifact sourcesJar
+            artifact javadocJar
+
+            pom {
+                name        = 'Create Recipe Hooks'
+                description = 'Universal event library for Create mod recipe completions'
+                url         = 'https://github.com/OWNER/create-recipe-hooks'  // ← update before publishing
+
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url  = 'https://opensource.org/licenses/MIT'
+                    }
+                }
+
+                // Strip Forge/Create/Minecraft from the generated POM — they are not
+                // real Maven dependencies (provided by the mod runtime, not Maven).
+                withXml {
+                    def root = asNode()
+                    def depsNode = root.get('dependencies')
+                    if (depsNode) root.remove(depsNode)
+                }
+            }
+        }
+    }
+
+    repositories {
+        // Local Maven — always available, no credentials needed.
+        mavenLocal()
+
+        // GitHub Packages — uncomment and set OWNER/REPO after creating the repository.
+        // Requires GITHUB_ACTOR and GITHUB_TOKEN environment variables (set in CI secrets).
+        //
+        // maven {
+        //     name = 'GitHubPackages'
+        //     url  = 'https://maven.pkg.github.com/OWNER/create-recipe-hooks'
+        //     credentials {
+        //         username = System.getenv('GITHUB_ACTOR') ?: ''
+        //         password = System.getenv('GITHUB_TOKEN') ?: ''
+        //     }
+        // }
+    }
+}
+
+// ── Reproducible builds ───────────────────────────────────────────────────────
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Javadoc).configureEach {
+    options.addStringOption('Xdoclint:none', '-quiet')
+}

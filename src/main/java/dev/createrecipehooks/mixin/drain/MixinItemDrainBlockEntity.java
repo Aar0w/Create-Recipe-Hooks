@@ -1,0 +1,55 @@
+package dev.createrecipehooks.mixin.drain;
+
+import com.simibubi.create.content.fluids.drain.ItemDrainBlockEntity;
+import dev.createrecipehooks.api.ICrhOwnable;
+import dev.createrecipehooks.internal.CrhOwnerContext;
+import net.minecraft.nbt.CompoundTag;
+import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.UUID;
+
+/**
+ * Adds {@link ICrhOwnable} UUID tracking to {@link ItemDrainBlockEntity}.
+ *
+ * <p>{@code continueProcessing()} is the single call site that drives
+ * {@code GenericItemEmptying.emptyItem()} (bytecode offsets 60 and 150).
+ * By setting {@link CrhOwnerContext} at HEAD and clearing at RETURN, the
+ * owner UUID is visible to {@code MixinGenericItemEmptying} for the entire
+ * duration of the emptyItem call, regardless of which return path is taken.
+ */
+@Mixin(value = ItemDrainBlockEntity.class, remap = false)
+public abstract class MixinItemDrainBlockEntity implements ICrhOwnable {
+
+    @Unique private @Nullable UUID crh$ownerUUID = null;
+
+    @Override public @Nullable UUID crh$getOwnerUUID() { return crh$ownerUUID; }
+    @Override public void crh$setOwnerUUID(@Nullable UUID uuid) { this.crh$ownerUUID = uuid; }
+
+    @Inject(method = "write(Lnet/minecraft/nbt/CompoundTag;Z)V", at = @At("TAIL"))
+    private void crh$writeOwner(CompoundTag tag, boolean clientPacket, CallbackInfo ci) {
+        if (!clientPacket && crh$ownerUUID != null)
+            tag.putUUID("crh:owner", crh$ownerUUID);
+    }
+
+    @Inject(method = "read(Lnet/minecraft/nbt/CompoundTag;Z)V", at = @At("TAIL"))
+    private void crh$readOwner(CompoundTag tag, boolean clientPacket, CallbackInfo ci) {
+        if (!clientPacket)
+            crh$ownerUUID = tag.hasUUID("crh:owner") ? tag.getUUID("crh:owner") : null;
+    }
+
+    @Inject(method = "continueProcessing()Z", at = @At("HEAD"))
+    private void crh$setOwnerContext(CallbackInfoReturnable<Boolean> ci) {
+        CrhOwnerContext.set(crh$ownerUUID);
+    }
+
+    @Inject(method = "continueProcessing()Z", at = @At("RETURN"))
+    private void crh$clearOwnerContext(CallbackInfoReturnable<Boolean> ci) {
+        CrhOwnerContext.clear();
+    }
+}

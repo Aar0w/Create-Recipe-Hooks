@@ -1,0 +1,93 @@
+package dev.createrecipehooks.neoforge;
+
+import com.simibubi.create.content.fluids.drain.ItemDrainBlock;
+import com.simibubi.create.content.fluids.spout.SpoutBlock;
+import com.simibubi.create.content.kinetics.crafter.MechanicalCrafterBlock;
+import com.simibubi.create.content.kinetics.fan.EncasedFanBlock;
+import com.simibubi.create.content.kinetics.millstone.MillstoneBlock;
+import com.simibubi.create.content.kinetics.press.MechanicalPressBlock;
+import com.simibubi.create.content.kinetics.saw.SawBlock;
+import com.simibubi.create.content.processing.basin.BasinBlock;
+import dev.createrecipehooks.api.ICrhOwnable;
+import dev.createrecipehooks.api.IRecipeFinishedListener;
+import dev.createrecipehooks.api.RecipeFinishedContext;
+import dev.createrecipehooks.core.RecipeEventDispatcher;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.registries.ForgeRegistries;
+
+/**
+ * Forge adapter — bridges {@link RecipeEventDispatcher} to the Forge global EVENT_BUS.
+ *
+ * <p>This is the <strong>only</strong> file that imports {@code net.minecraftforge.*}.
+ * All Mixin classes are platform-agnostic.
+ *
+ * <p>For the 1.20.1 / Forge 47 target, uses {@code MinecraftForge.EVENT_BUS}
+ * (not {@code NeoForge.EVENT_BUS} which belongs to NeoForge 20.4+ / 1.21).
+ */
+public final class NeoForgeAdapter implements IRecipeFinishedListener {
+
+    public static final NeoForgeAdapter INSTANCE = new NeoForgeAdapter();
+
+    private NeoForgeAdapter() {}
+
+    @Override
+    public void onRecipeFinished(RecipeFinishedContext ctx) {
+        MinecraftForge.EVENT_BUS.post(new CreateRecipeFinishedEvent(ctx));
+    }
+
+    /**
+     * Records the placing player's UUID in the BlockEntity's NBT for all CRH-tracked
+     * machines that implement {@link ICrhOwnable}.
+     *
+     * <p>CEI Printer is matched by registry name (no hard compile-time CEI dependency).
+     */
+    @SubscribeEvent
+    public static void onOwnableBlockPlaced(BlockEvent.EntityPlaceEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+
+        Block block = event.getPlacedBlock().getBlock();
+        if (!isOwnerTracked(block)) return;
+
+        BlockEntity be = event.getLevel().getBlockEntity(event.getPos());
+        if (be instanceof ICrhOwnable ownable) {
+            ownable.crh$setOwnerUUID(player.getUUID());
+        }
+    }
+
+    private static boolean isOwnerTracked(Block block) {
+        if (block instanceof BasinBlock)            return true;
+        if (block instanceof MillstoneBlock)        return true;
+        if (block instanceof SawBlock)              return true;
+        if (block instanceof SpoutBlock)            return true;
+        if (block instanceof ItemDrainBlock)        return true;
+        if (block instanceof MechanicalCrafterBlock) return true;
+        if (block instanceof EncasedFanBlock)       return true;
+        if (block instanceof MechanicalPressBlock)  return true;
+        // Deployer: Create's DeployerBlock.setPlacedBy() already sets the built-in owner field.
+
+        // CEI Printer — soft dependency, matched by registry name
+        ResourceLocation key = ForgeRegistries.BLOCKS.getKey(block);
+        return key != null
+            && "create_enchantment_industry".equals(key.getNamespace())
+            && "printer".equals(key.getPath());
+    }
+
+    /**
+     * Wires this adapter into the dispatch chain.
+     *
+     * <p>Calls {@link RecipeEventDispatcher#registerListener} directly rather than
+     * going through {@link dev.createrecipehooks.api.CreateRecipeHooks#register} because
+     * this adapter IS part of the library infrastructure, not an addon. Using the public
+     * API here would be circular — the adapter and the public API are at the same layer.
+     */
+    public static void register() {
+        RecipeEventDispatcher.registerListener(INSTANCE);
+        MinecraftForge.EVENT_BUS.register(NeoForgeAdapter.class); // onOwnableBlockPlaced
+    }
+}
