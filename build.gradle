@@ -1,74 +1,32 @@
 plugins {
+    id 'fabric-loom' version '1.10-SNAPSHOT'
     id 'java'
-    id 'idea'
-    id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
-    id 'org.spongepowered.mixin' version '0.7.+'
 }
 
-version = "${mod_version}+create-${create_version}"
+version = "${mod_version}+create-fabric-6.0.8.1"
 group = "dev.createrecipehooks"
-base { archivesName = "create-recipe-hooks" }
+base { archivesName = "create-recipe-hooks-fabric" }
 
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(17)
     withSourcesJar()
-    withJavadocJar()
-}
-
-minecraft {
-    mappings channel: 'official', version: "${minecraft_version}"
-    copyIdeResources = true
-
-    runs {
-        client {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            property 'crh.debug', 'true'
-            mods {
-                createrecipehooks { source sourceSets.main }
-            }
-        }
-        server {
-            workingDirectory project.file('run')
-            property 'forge.logging.console.level', 'debug'
-            property 'crh.debug', 'true'
-            args '--nogui'
-            mods {
-                createrecipehooks { source sourceSets.main }
-            }
-        }
-    }
 }
 
 repositories {
     maven {
-        name = "NeoForged"
-        url = "https://maven.neoforged.net/releases"
-    }
-    maven {
-        name = "Forge"
-        url = "https://maven.minecraftforge.net"
-    }
-    maven {
-        name = "Create"
-        url = "https://maven.createmod.net"
-    }
-    maven {
-        name = "Jitpack"
-        url = "https://jitpack.io"
-    }
-    maven {
-        // MixinExtras for @WrapOperation and @Local
-        name = "MixinExtras"
-        url = "https://repo.spongepowered.org/repository/maven-public/"
-    }
-    maven {
-        // CEI compile stub (soft dependency)
+        // Create Fabric compile stub
         name = "Modrinth"
         url = "https://api.modrinth.com/maven"
         content { includeGroup "maven.modrinth" }
+    }
+    maven {
+        // Ponder / Catnip / Flywheel (compile classpath for Create Fabric's class hierarchy)
+        name = "CreateMod"
+        url = "https://maven.createmod.net"
+        content {
+            includeGroupAndSubgroups "net.createmod"
+            includeGroupAndSubgroups "dev.engine-room"
+        }
     }
     maven {
         // KubeJS + Rhino (soft dependency for the CRHEvents script integration)
@@ -82,144 +40,104 @@ repositories {
         url = "https://maven.architectury.dev"
         content { includeGroup "dev.architectury" }
     }
+    maven {
+        // Porting Lib (fluids module; compile classpath for the porting-lib FluidStack
+        // used by Create Fabric's fluid machines)
+        name = "devOS"
+        url = "https://mvn.devos.one/releases"
+        content { includeGroupAndSubgroups "io.github.fabricators_of_create" }
+    }
+    maven {
+        // reach-entity-attributes (transitive dependency of Porting Lib base)
+        name = "JamiesWhiteShirt"
+        url = "https://maven.jamieswhiteshirt.com/libs-release"
+        content { includeGroup "com.jamieswhiteshirt" }
+    }
+    maven {
+        // Forge Config API Port (transitive dependency of Ponder)
+        name = "Fuzs"
+        url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven"
+        content { includeGroup "fuzs.forgeconfigapiport" }
+    }
+    maven {
+        // cardinal-components (potential transitive dependency of Porting Lib)
+        name = "Ladysnake"
+        url = "https://maven.ladysnake.org/releases"
+        content { includeGroupAndSubgroups "dev.onyxstudios" }
+    }
     mavenCentral()
 }
 
+// Shared platform-agnostic sources from the Forge project.
+// Only api/, core/ and internal/ are pulled in; the Forge adapter, the Forge mixins
+// and the KubeJS integration (Forge-flavoured KubeJS) stay out.
+// NOTE: include/exclude patterns apply to the union of all srcDirs, so the local
+// fabric sources must also be matched by an include pattern below.
+sourceSets.main.java {
+    srcDir '../1.20.1/src/main/java'
+    include 'dev/createrecipehooks/api/**'
+    include 'dev/createrecipehooks/core/**'
+    include 'dev/createrecipehooks/internal/**'
+    exclude 'dev/createrecipehooks/internal/debug/**'
+    // KubeJS integration is shared too: it only uses KubeJS *common* API,
+    // which is identical between kubejs-forge and kubejs-fabric.
+    include 'dev/createrecipehooks/integration/**'
+    // All Fabric-local code, including Fabric mixins (dev.createrecipehooks.fabric.mixin),
+    // lives under fabric/** so it never collides with the Forge project's mixin/ package.
+    include 'dev/createrecipehooks/fabric/**'
+}
+
 dependencies {
-    minecraft "net.neoforged:forge:${minecraft_version}-${forge_version}"
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    // Mojmap: matches the Forge project sources AND Create Fabric (built with Mojmap+Parchment)
+    mappings loom.officialMojangMappings()
 
-    // Create for NeoForge 1.20.1
-    implementation fg.deobf("com.simibubi.create:create-${minecraft_version}:${create_version}:all") {
-        transitive = false
+    modImplementation "net.fabricmc:fabric-loader:${loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+
+    // Create Fabric — compile target for the mixins (phase 4). Not needed at dev runtime
+    // for the skeleton; real-game testing happens in an actual Fabric instance.
+    modCompileOnly "maven.modrinth:create-fabric:${create_fabric_version}"
+
+    // KubeJS — soft dependency for the shared CRHEvents integration (loaded only by KubeJS
+    // via kubejs.plugins.txt). Rhino is needed on javac's classpath because EventHandler
+    // extends rhino.BaseFunction.
+    modCompileOnly "dev.latvian.mods:kubejs-fabric:${kubejs_version}"
+    modCompileOnly "dev.latvian.mods:rhino-fabric:${rhino_version}"
+
+    // Porting Lib — Create Fabric's classes reference these (FluidStack in fluids;
+    // BlockEntity extension interfaces in base; item handlers in transfer). The modules
+    // are nested (jar-in-jar) inside the Create Fabric jar and therefore not visible to
+    // javac; pulled explicitly for the compile classpath only.
+    ["fluids", "base", "transfer", "extensions", "accessors"].each { module ->
+        modCompileOnly "io.github.fabricators_of_create.Porting-Lib:${module}:${porting_lib_version}"
     }
 
-    // Create 6.x compile-only dependencies (not bundled in :all)
-    compileOnly fg.deobf("net.createmod.catnip:Catnip-Forge-1.20.1:0.8.44") { transitive = false }
-    compileOnly fg.deobf("net.createmod.ponder:Ponder-Forge-1.20.1:1.0.92") { transitive = false }
+    // Ponder — SmartBlockEntity's hierarchy references net.createmod.ponder.api.VirtualBlockEntity
+    modCompileOnly "net.createmod.ponder:Ponder-Fabric-${minecraft_version}:1.0.91"
 
-    // MixinExtras — the forge artifact bundles annotations in a nested JAR that fg.deobf() cannot
-    // extract onto javac's classpath, so we compile against mixinextras-common (Maven Central),
-    // which is exactly that inner JAR published standalone.
-    // The forge artifact is still needed on the annotation-processor path (runtime loading).
-    compileOnly "io.github.llamalad7:mixinextras-common:${mixinextras_version}"
-    annotationProcessor "io.github.llamalad7:mixinextras-forge:${mixinextras_version}"
-
-    // Soft-dependency compile stubs — present only for the Mixin AP to resolve @Mixin targets.
-    // These JARs are NOT bundled; the mixins that target them use require=0 and are silently
-    // skipped at runtime when the respective mod is absent.
-    // Pulled from Modrinth maven (version 1.3.3 = the "for-create-6.0.6" Forge build).
-    compileOnly "maven.modrinth:create-enchantment-industry:1.3.3"
-
-    // KubeJS — soft dependency for the CRHEvents script integration.
-    // The integration classes are only classloaded by KubeJS itself (via kubejs.plugins.txt),
-    // so nothing here is required at runtime when KubeJS is absent.
-    // Rhino is needed on javac's classpath because EventHandler extends rhino.BaseFunction
-    // (fg.deobf does not carry transitive dependencies; version from the kubejs-forge POM).
-    compileOnly fg.deobf("dev.latvian.mods:kubejs-forge:${kubejs_version}")
-    compileOnly fg.deobf("dev.latvian.mods:rhino-forge:2001.2.2-build.17")
-
-    // Mixin annotation processor + annotations on javac classpath.
-    // ForgeGradle does not expose Mixin annotations from the embedded Forge JARs to javac,
-    // so we add them explicitly. compileOnly ensures they are not bundled (Forge provides them
-    // at runtime). Without this, @Mixin.require() is not resolvable at compile time.
-    compileOnly 'org.spongepowered:mixin:0.8.5'
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    // @Nullable / @NotNull used across the shared api/ sources
+    compileOnly 'org.jetbrains:annotations:24.1.0'
 }
 
-// ── Mixin refmap ─────────────────────────────────────────────────────────────
-
-mixin {
-    add sourceSets.main, 'createrecipehooks.refmap.json'
-    config 'createrecipehooks.mixins.json'
-}
-
-// ── Jar manifest ─────────────────────────────────────────────────────────────
-
-jar {
-    manifest {
-        attributes([
-            'Specification-Title'     : 'createrecipehooks',
-            'Specification-Vendor'    : 'createrecipehooks',
-            'Specification-Version'   : '1',
-            'Implementation-Title'    : project.name,
-            'Implementation-Version'  : project.jar.archiveVersion,
-            'Implementation-Vendor'   : 'createrecipehooks',
-            'MixinConfigs'            : 'createrecipehooks.mixins.json'
-        ])
+loom {
+    mixin {
+        // Modern mixin remapping: annotations are remapped by tiny-remapper during
+        // remapJar instead of the legacy annotation processor. The legacy AP hard-errors
+        // with "Unable to locate obfuscation mapping" on soft targets in Create's own
+        // (unmapped) methods; tiny-remapper handles them correctly and needs no refmap.
+        useLegacyMixinAp = false
     }
 }
-
-// ── Maven publishing ─────────────────────────────────────────────────────────
-//
-// Usage:
-//   ./gradlew publishToMavenLocal          → installs to ~/.m2 for local dev
-//   ./gradlew publish                      → publishes to configured remote
-//
-// Consumer build.gradle (after local install or remote publish):
-//   repositories { mavenLocal() }          // or the remote URL below
-//   dependencies {
-//       implementation "dev.createrecipehooks:create-recipe-hooks:${version}"
-//   }
-
-publishing {
-    publications {
-        mavenForge(MavenPublication) {
-            groupId    = project.group
-            artifactId = base.archivesName.get()   // "create-recipe-hooks"
-            version    = project.version           // "1.0.0+create-6.0.8-291"
-
-            // Main jar, sources, and javadoc (built by java { withSourcesJar/withJavadocJar })
-            artifact jar
-            artifact sourcesJar
-            artifact javadocJar
-
-            pom {
-                name        = 'Create Recipe Hooks'
-                description = 'Universal event library for Create mod recipe completions'
-                url         = 'https://github.com/Aar0w/Create-Recipe-Hooks'
-
-                licenses {
-                    license {
-                        name = 'LGPL-3.0-or-later'
-                        url  = 'https://www.gnu.org/licenses/lgpl-3.0.html'
-                    }
-                }
-
-                // Strip Forge/Create/Minecraft from the generated POM — they are not
-                // real Maven dependencies (provided by the mod runtime, not Maven).
-                withXml {
-                    def root = asNode()
-                    def depsNode = root.get('dependencies')
-                    if (depsNode) root.remove(depsNode)
-                }
-            }
-        }
-    }
-
-    repositories {
-        // Local Maven — always available, no credentials needed.
-        mavenLocal()
-
-        // GitHub Packages — uncomment and set OWNER/REPO after creating the repository.
-        // Requires GITHUB_ACTOR and GITHUB_TOKEN environment variables (set in CI secrets).
-        //
-        // maven {
-        //     name = 'GitHubPackages'
-        //     url  = 'https://maven.pkg.github.com/OWNER/create-recipe-hooks'
-        //     credentials {
-        //         username = System.getenv('GITHUB_ACTOR') ?: ''
-        //         password = System.getenv('GITHUB_TOKEN') ?: ''
-        //     }
-        // }
-    }
-}
-
-// ── Reproducible builds ───────────────────────────────────────────────────────
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-tasks.withType(Javadoc).configureEach {
-    options.addStringOption('Xdoclint:none', '-quiet')
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
 }

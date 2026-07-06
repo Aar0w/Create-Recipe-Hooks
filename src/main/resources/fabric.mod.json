@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "createrecipehooks",
+  "version": "${version}",
+  "name": "Create Recipe Hooks",
+  "description": "Provides a unified API for listening to Create recipe completions. Intended for use by FTB Quests, KubeJS, and other integration mods.",
+  "authors": ["Aarow"],
+  "contact": {
+    "issues": "https://github.com/Aar0w/Create-Recipe-Hooks/issues",
+    "sources": "https://github.com/Aar0w/Create-Recipe-Hooks"
+  },
+  "license": "LGPL-3.0-or-later",
+  "icon": "crhlogo.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.createrecipehooks.fabric.CreateRecipeHooksFabric"]
+  },
+  "mixins": ["createrecipehooks.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "fabric-api": "*",
+    "minecraft": "1.20.1",
+    "create": ">=6.0.8"
+  }
+}

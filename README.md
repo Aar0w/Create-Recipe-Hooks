@@ -1,49 +1,47 @@
-# Create Recipe Hooks (Forge, Minecraft 1.20.1)
+# Create Recipe Hooks (Fabric, Minecraft 1.20.1)
 
-A server-side API mod for **Minecraft 1.20.1 / Forge 47+** that fires a unified event whenever a recipe completes in any **Create 6.0.8+** machine (and some addon machines), and whenever a Create machine processes a world block: Drill mining, Harvester reaping, Saw felling trees. Lets quests, scripts, and other mods react to "player smelted / crushed / mined X", with player attribution via UUID.
+A server-side API mod for **Minecraft 1.20.1 / Fabric** that fires a unified event whenever a recipe completes in any **Create Fabric 6.0.8.1+** machine, and whenever a Create machine processes a world block: Drill mining, Harvester reaping, Saw felling trees. Lets quests, scripts, and other mods react to "player smelted / crushed / mined X", with player attribution via UUID.
 
 ## Requirements
 
 | Component | Version | Required |
 |---|---|---|
 | Minecraft | 1.20.1 | yes |
-| Forge | 47+ | yes |
-| Create | 6.0.8+ | yes |
-| KubeJS | 2001.6.5+ | only for JS scripts |
-| Create Enchantment Industry | 1.3.3+ | optional (enables `CEI_PRINTER`) |
+| Fabric Loader | 0.15+ | yes |
+| Fabric API | 0.92.2+ | yes |
+| Create Fabric | 6.0.8.1+ | yes |
+| KubeJS (Fabric) | 2001.6.5+ | only for JS scripts |
 
 The mod is **server-side**: clients without it can join a server that has it. For singleplayer, install it in your instance.
 
-The same file also runs on **NeoForge 1.20.1** (47.1+), verified on both clients and dedicated servers: on 1.20.1 NeoForge keeps full Forge mod compatibility.
-
 ## The Event
 
-The mod posts three events on the Forge event bus:
+For Java mods the events are standard Fabric callbacks:
 
 ```
-dev.createrecipehooks.neoforge.CreateRecipeFinishedEvent   (recipe completions)
-dev.createrecipehooks.neoforge.CreateBlockProcessedEvent   (Drill, Harvester, lone Saw cuts)
-dev.createrecipehooks.neoforge.CreateTreeCutEvent          (Saw felling a tree)
+dev.createrecipehooks.fabric.CreateRecipeFinishedCallback.EVENT   (recipe completions)
+dev.createrecipehooks.fabric.CreateBlockProcessedCallback.EVENT   (Drill, Harvester, lone Saw cuts)
+dev.createrecipehooks.fabric.CreateTreeCutCallback.EVENT          (Saw felling a tree)
 ```
 
-This section describes `CreateRecipeFinishedEvent`; the block events are documented in
-the "Block processing events" section below.
+This section describes the recipe callback; the block events are documented in the
+"Block processing events" section below.
 
 One event = one recipe application. If a machine processes a whole stack at once (e.g. a Fan smelting an ItemEntity with a stack of 4, or a Crushing Wheel grinding a stack of ore), there will be **one** event, with the quantity reflected in the `getCount()` of the output stacks.
 
 The event fires **server-side only** and is not cancellable.
 
-### Event methods
+### Context methods (`RecipeFinishedContext`)
 
 | Method | Type | Description |
 |---|---|---|
 | `getSource()` | `RecipeSource` | Which machine completed the recipe (see table below). Never `null` |
 | `getLevel()` | `Level` | The server level. Never `null` |
-| `getRecipeId()` | `ResourceLocation` | Recipe ID, e.g. `create:crushing/raw_iron`. May be `null` (Spout/Item Drain via fluid capability, potion emptying, CEI Printer) |
+| `getRecipeId()` | `ResourceLocation` | Recipe ID, e.g. `create:crushing/raw_iron`. May be `null` (Spout/Item Drain via fluid capability, potion emptying) |
 | `getRecipe()` | `Recipe<?>` | The recipe object. May be `null` even when `getRecipeId()` is present |
 | `getItemOutputs()` | `List<ItemStack>` | Output items. Do not mutate. Empty list when there are no item outputs |
-| `getItemInputs()` | `List<ItemStack>` | Input items (available for Fan, Sequenced Assembly, Spout, Item Drain, CEI Printer) |
-| `getFluidOutputs()` | `List<FluidAmount>` | Fluid outputs in millibuckets (Basin, Item Drain) |
+| `getItemInputs()` | `List<ItemStack>` | Input items (available for Fan, Sequenced Assembly, Spout, Item Drain) |
+| `getFluidOutputs()` | `List<FluidAmount>` | Fluid outputs in **millibuckets** (Basin, Item Drain). Create Fabric's internal droplet amounts are converted for you (81 droplets = 1 mB) |
 | `getBlockPos()` | `BlockPos` | Position of the machine. `null` for Fan (item in world), belt Deployer, Sand Paper |
 | `getPlayer()` | `ServerPlayer` | Only for `SAND_PAPER` (manual use). `null` for everything else; use metadata instead |
 | `getMetadata()` | `Map<String, Object>` | Metadata keys (see below) |
@@ -55,7 +53,7 @@ The event fires **server-side only** and is not cancellable.
 
 | Source | Machine | `owner_uuid` in metadata | Who it refers to |
 |---|---|---|---|
-| `BASIN` | Mixer / Compactor / pressing in a Basin / CEI Infuser | ✅ | who placed the Basin |
+| `BASIN` | Mixer / Compactor / pressing in a Basin | ✅ | who placed the Basin |
 | `MECHANICAL_PRESS` | Press (belt and world modes) | ✅ | who placed the Press |
 | `MILLSTONE` | Millstone | ✅ | who placed the Millstone |
 | `CRUSHING_WHEEL` | Crushing Wheels | ✅ | **who threw the item** into the wheels; for automated input (belts, hoppers) falls back to **whoever placed the wheels**. When two wheels have different owners, one of them is picked deterministically |
@@ -70,11 +68,14 @@ The event fires **server-side only** and is not cancellable.
 | `FAN_HAUNTING` | Fan + soul fire | ✅ | who placed the Fan |
 | `SPOUT_FILLING` | Spout | ✅ | who placed the Spout. `getRecipeId()` is `null` when filling via fluid capability (buckets and other containers without a `FillingRecipe`) |
 | `ITEM_DRAIN_EMPTYING` | Item Drain | ✅ | who placed the Drain. `getRecipeId()` is `null` for capability emptying (buckets) and potion emptying |
-| `CEI_PRINTER` | Printer from Create Enchantment Industry | ✅ | who placed the Printer (only when CEI is installed) |
 | `UNKNOWN` | Unrecognized addon going through `RecipeApplier` | ✅ when context is known | n/a |
 
 Fan events cover **both modes**: items on a belt and items lying in the air current in the world.
 Item Drain covers **three paths**: emptying recipes, fluid-capability containers (buckets), and potions.
+
+### Not available on Fabric
+
+`CEI_PRINTER`: there is no Create Enchantment Industry port for Create Fabric 6.x, so this source never fires on Fabric.
 
 ### Reserved sources (NO events are fired in v1)
 
@@ -182,9 +183,10 @@ The owner UUID is written into the block entity's NBT when a player places the b
 
 ## Script examples (KubeJS)
 
-CRH registers its own KubeJS event group: `CRHEvents.recipeFinished`. The first
-argument is an optional source filter; the event object resolves the attributed player for you
-via `event.getOwner()`. `getSource()` and `getRecipeId()` return plain strings.
+CRH registers its own KubeJS event group, `CRHEvents.recipeFinished`, **identical to the Forge
+version**: the same scripts work on both loaders without changes. The first argument is an
+optional source filter; the event object resolves the attributed player for you via
+`event.getOwner()`. `getSource()` and `getRecipeId()` return plain strings.
 Place scripts in `kubejs/server_scripts/`. Ready-made test scripts for every machine live
 in the repository's `script_test/` folder.
 
@@ -212,8 +214,8 @@ CRHEvents.recipeFinished(event => {
 ### 2. Filtering by a specific recipe
 
 ```javascript
-CRHEvents.recipeFinished('BASIN', event => {
-    if (event.getRecipeId() !== 'create_enchantment_industry:mixing/hyper_experience') return;
+CRHEvents.recipeFinished('SPOUT_FILLING', event => {
+    if (event.getRecipeId() !== 'create:filling/honey_bottle') return;
 
     // ... award the reward as in example 1
 });
@@ -278,33 +280,29 @@ CRHEvents.recipeFinished('MECHANICAL_PRESS', event => {
 ## Usage from Java
 
 ```java
-MinecraftForge.EVENT_BUS.addListener((CreateRecipeFinishedEvent event) -> {
-    RecipeFinishedContext ctx = event.getContext();
-    // ...
+CreateRecipeFinishedCallback.EVENT.register(ctx -> {
+    if (ctx.getSource() == RecipeSource.MILLSTONE) {
+        // ctx.getRecipeId(), ctx.getItemOutputs(), ctx.getBlockPos(), ...
+    }
 });
 
-MinecraftForge.EVENT_BUS.addListener((CreateBlockProcessedEvent event) -> {
-    // event.getBlockId(), event.isContraption(), event.getMetadata()
+CreateBlockProcessedCallback.EVENT.register(ctx -> {
+    // ctx.getBlockId(), ctx.isContraption(), ctx.getMetadata()
 });
 
-MinecraftForge.EVENT_BUS.addListener((CreateTreeCutEvent event) -> {
-    // event.getLogCount(), event.getLeafCount()
+CreateTreeCutCallback.EVENT.register(ctx -> {
+    // ctx.getLogCount(), ctx.getLeafCount()
 });
 ```
 
-Public API: `dev.createrecipehooks.api` (`RecipeFinishedContext`, `BlockProcessedContext`, `RecipeSource`, `FluidAmount`, `CreateRecipeHooks.register(...)`, `CreateRecipeHooks.registerBlockProcessed(...)`, `CreateRecipeHooks.registerTreeCut(...)`). The `RecipeSource` enum is stable: values are never removed between minor versions; new ones may be added.
+Public API: `dev.createrecipehooks.api` (`RecipeFinishedContext`, `BlockProcessedContext`, `RecipeSource`, `FluidAmount`, `CreateRecipeHooks.register(...)`, `CreateRecipeHooks.registerBlockProcessed(...)`, `CreateRecipeHooks.registerTreeCut(...)`) plus the callbacks in `dev.createrecipehooks.fabric`. The `RecipeSource` enum is stable: values are never removed between minor versions; new ones may be added.
 
 ### Notes for mods depending on CRH
 
 - **Events fire on the logical server only.** In singleplayer that is the integrated server, so everything works there identically; nothing special is needed. If your mod wants to show something on the client (HUD, toasts, particles) in response to an event, send your own packet: CRH provides no networking.
 - **Listeners are synchronous** and run on the server tick thread. Return promptly; for heavy work (databases, HTTP) hand the data off to your own worker thread. See the threading notes in the `RecipeFinishedContext` javadoc.
-- **Declaring the dependency**: add CRH to your `mods.toml` as usual. The jar loads harmlessly on clients, so a regular both-sides dependency is fine. If your mod is client and server but you want CRH to stay on the server only, mark the dependency with `side="SERVER"`.
+- **Declaring the dependency**: add CRH to the `depends` block of your `fabric.mod.json` as usual. The jar loads harmlessly on clients, so a regular dependency is fine on both sides.
 - **License**: linking against the API imposes no obligations, your mod can use any license (LGPL linking exception). Only forks and derivatives of CRH itself must remain LGPL.
-
-## Debug mode
-
-Launch with the JVM argument `-Dcrh.debug=true` to log every recipe completion to
-`logs/crh-events.log` (Forge version only).
 
 ## License
 
