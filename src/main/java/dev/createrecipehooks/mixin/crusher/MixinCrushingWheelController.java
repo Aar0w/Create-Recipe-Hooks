@@ -1,15 +1,20 @@
 package dev.createrecipehooks.mixin.crusher;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import com.simibubi.create.content.kinetics.crusher.CrushingWheelBlockEntity;
 import com.simibubi.create.content.kinetics.crusher.CrushingWheelControllerBlockEntity;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
+import dev.createrecipehooks.api.ICrhOwnable;
 import dev.createrecipehooks.api.RecipeFinishedContext;
 import dev.createrecipehooks.api.RecipeSource;
 import dev.createrecipehooks.core.RecipeEventDispatcher;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -79,10 +84,28 @@ public abstract class MixinCrushingWheelController {
             .recipeId(r.getId())
             .itemOutputs(outputs);
 
-        if (crh$throwerUUID != null)
-            builder.meta("createrecipehooks:owner_uuid", crh$throwerUUID.toString());
+        // Attribution priority: item thrower first (manual toss), then the owner of an
+        // adjacent crushing wheel (belt/hopper-fed automation).
+        UUID attributed = crh$throwerUUID != null
+                ? crh$throwerUUID
+                : crh$findWheelOwner(level, self.getBlockPos());
+        if (attributed != null)
+            builder.meta("createrecipehooks:owner_uuid", attributed.toString());
 
         RecipeEventDispatcher.dispatch(builder.build());
         crh$throwerUUID = null;
+    }
+
+    @Unique
+    private static @Nullable UUID crh$findWheelOwner(Level level, BlockPos controllerPos) {
+        for (Direction dir : Direction.values()) {
+            BlockEntity be = level.getBlockEntity(controllerPos.relative(dir));
+            if (be instanceof CrushingWheelBlockEntity && be instanceof ICrhOwnable ownable) {
+                UUID owner = ownable.crh$getOwnerUUID();
+                if (owner != null)
+                    return owner;
+            }
+        }
+        return null;
     }
 }

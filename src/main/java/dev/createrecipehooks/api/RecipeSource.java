@@ -63,8 +63,38 @@ public enum RecipeSource {
     /** Crushing Wheel (crushing and milling recipes) — <strong>FACTUAL ORIGIN</strong>. */
     CRUSHING_WHEEL,
 
-    /** Mechanical Saw (cutting, stonecutting, sequenced cutting) — <strong>FACTUAL ORIGIN</strong>. */
+    /**
+     * Mechanical Saw — <strong>FACTUAL ORIGIN</strong>.
+     *
+     * <p>Used by two distinct event families:
+     * <ul>
+     *   <li><strong>recipeFinished</strong> — cutting, stonecutting, sequenced cutting
+     *       recipes processed by an upward-facing Saw.</li>
+     *   <li><strong>blockProcessed / treeCut</strong> — a horizontal Saw (stationary or
+     *       contraption actor) cutting world blocks: treeCut when the block is part of
+     *       a tree, blockProcessed when it is a lone block.</li>
+     * </ul>
+     */
     MECHANICAL_SAW,
+
+    /**
+     * Mechanical Drill — <strong>FACTUAL ORIGIN, blockProcessed events only</strong>.
+     *
+     * <p>Fired once per block broken by a Drill, both stationary and as a contraption
+     * actor ({@link BlockProcessedContext#isContraption()} distinguishes the two).
+     * Never carried by recipeFinished events: the Drill does not process recipes.
+     */
+    MECHANICAL_DRILL,
+
+    /**
+     * Mechanical Harvester — <strong>FACTUAL ORIGIN, blockProcessed events only</strong>.
+     *
+     * <p>Fired once per crop, plant, or leaf block harvested by a Harvester contraption
+     * actor. The Harvester only operates on contraptions, so
+     * {@link BlockProcessedContext#isContraption()} is always {@code true}.
+     * Never carried by recipeFinished events.
+     */
+    MECHANICAL_HARVESTER,
 
     /** Mechanical Crafter (Create crafting + vanilla crafting if enabled) — <strong>FACTUAL ORIGIN</strong>. */
     MECHANICAL_CRAFTER,

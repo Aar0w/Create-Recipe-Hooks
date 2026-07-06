@@ -35,13 +35,13 @@ public abstract class MixinBasinBlockEntity implements ICrhOwnable {
         this.crh$ownerUUID = uuid;
     }
 
-    @Inject(method = "write(Lnet/minecraft/nbt/CompoundTag;Z)V", at = @At("TAIL"))
+    @Inject(method = "write(Lnet/minecraft/nbt/CompoundTag;Z)V", at = @At("HEAD"))
     private void crh$saveOwner(CompoundTag tag, boolean clientPacket, CallbackInfo ci) {
         if (!clientPacket && crh$ownerUUID != null)
             tag.putUUID("crh:owner", crh$ownerUUID);
     }
 
-    @Inject(method = "read(Lnet/minecraft/nbt/CompoundTag;Z)V", at = @At("TAIL"))
+    @Inject(method = "read(Lnet/minecraft/nbt/CompoundTag;Z)V", at = @At("HEAD"))
     private void crh$loadOwner(CompoundTag tag, boolean clientPacket, CallbackInfo ci) {
         if (!clientPacket)
             crh$ownerUUID = tag.hasUUID("crh:owner") ? tag.getUUID("crh:owner") : null;

@@ -1,8 +1,11 @@
 package dev.createrecipehooks.neoforge;
 
+import com.simibubi.create.content.contraptions.actors.harvester.HarvesterBlock;
 import com.simibubi.create.content.fluids.drain.ItemDrainBlock;
 import com.simibubi.create.content.fluids.spout.SpoutBlock;
 import com.simibubi.create.content.kinetics.crafter.MechanicalCrafterBlock;
+import com.simibubi.create.content.kinetics.crusher.CrushingWheelBlock;
+import com.simibubi.create.content.kinetics.drill.DrillBlock;
 import com.simibubi.create.content.kinetics.fan.EncasedFanBlock;
 import com.simibubi.create.content.kinetics.millstone.MillstoneBlock;
 import com.simibubi.create.content.kinetics.press.MechanicalPressBlock;
@@ -69,6 +72,9 @@ public final class NeoForgeAdapter implements IRecipeFinishedListener {
         if (block instanceof MechanicalCrafterBlock) return true;
         if (block instanceof EncasedFanBlock)       return true;
         if (block instanceof MechanicalPressBlock)  return true;
+        if (block instanceof CrushingWheelBlock)    return true;
+        if (block instanceof DrillBlock)            return true;
+        if (block instanceof HarvesterBlock)        return true;
         // Deployer: Create's DeployerBlock.setPlacedBy() already sets the built-in owner field.
 
         // CEI Printer — soft dependency, matched by registry name
@@ -88,6 +94,10 @@ public final class NeoForgeAdapter implements IRecipeFinishedListener {
      */
     public static void register() {
         RecipeEventDispatcher.registerListener(INSTANCE);
+        RecipeEventDispatcher.registerBlockProcessedListener(
+            ctx -> MinecraftForge.EVENT_BUS.post(new CreateBlockProcessedEvent(ctx)));
+        RecipeEventDispatcher.registerTreeCutListener(
+            ctx -> MinecraftForge.EVENT_BUS.post(new CreateTreeCutEvent(ctx)));
         MinecraftForge.EVENT_BUS.register(NeoForgeAdapter.class); // onOwnableBlockPlaced
     }
 }

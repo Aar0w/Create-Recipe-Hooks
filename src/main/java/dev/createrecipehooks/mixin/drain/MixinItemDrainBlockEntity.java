@@ -31,13 +31,13 @@ public abstract class MixinItemDrainBlockEntity implements ICrhOwnable {
     @Override public @Nullable UUID crh$getOwnerUUID() { return crh$ownerUUID; }
     @Override public void crh$setOwnerUUID(@Nullable UUID uuid) { this.crh$ownerUUID = uuid; }
 
-    @Inject(method = "write(Lnet/minecraft/nbt/CompoundTag;Z)V", at = @At("TAIL"))
+    @Inject(method = "write(Lnet/minecraft/nbt/CompoundTag;Z)V", at = @At("HEAD"))
     private void crh$writeOwner(CompoundTag tag, boolean clientPacket, CallbackInfo ci) {
         if (!clientPacket && crh$ownerUUID != null)
             tag.putUUID("crh:owner", crh$ownerUUID);
     }
 
-    @Inject(method = "read(Lnet/minecraft/nbt/CompoundTag;Z)V", at = @At("TAIL"))
+    @Inject(method = "read(Lnet/minecraft/nbt/CompoundTag;Z)V", at = @At("HEAD"))
     private void crh$readOwner(CompoundTag tag, boolean clientPacket, CallbackInfo ci) {
         if (!clientPacket)
             crh$ownerUUID = tag.hasUUID("crh:owner") ? tag.getUUID("crh:owner") : null;

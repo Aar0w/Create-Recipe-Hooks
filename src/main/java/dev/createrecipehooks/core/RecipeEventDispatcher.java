@@ -1,5 +1,7 @@
 package dev.createrecipehooks.core;
 
+import dev.createrecipehooks.api.BlockProcessedContext;
+import dev.createrecipehooks.api.IBlockProcessedListener;
 import dev.createrecipehooks.api.IRecipeFinishedListener;
 import dev.createrecipehooks.api.RecipeFinishedContext;
 import org.apache.logging.log4j.LogManager;
@@ -47,6 +49,14 @@ public final class RecipeEventDispatcher {
     private static final CopyOnWriteArrayList<IRecipeFinishedListener> LISTENERS =
             new CopyOnWriteArrayList<>();
 
+    /** Listeners for the blockProcessed channel (one event per processed block). */
+    private static final CopyOnWriteArrayList<IBlockProcessedListener> BLOCK_LISTENERS =
+            new CopyOnWriteArrayList<>();
+
+    /** Listeners for the treeCut channel (one event per felled tree). */
+    private static final CopyOnWriteArrayList<IBlockProcessedListener> TREE_LISTENERS =
+            new CopyOnWriteArrayList<>();
+
     // ------------------------------------------------------------------ //
     //  Registration (called by CreateRecipeHooks and RecipeHookRegistry)   //
     // ------------------------------------------------------------------ //
@@ -60,6 +70,24 @@ public final class RecipeEventDispatcher {
     public static void registerListener(IRecipeFinishedListener listener) {
         if (listener == null) throw new NullPointerException("listener must not be null");
         LISTENERS.add(listener);
+    }
+
+    /**
+     * Adds a blockProcessed listener. Thread-safe. Called by
+     * {@link dev.createrecipehooks.api.CreateRecipeHooks#registerBlockProcessed}.
+     */
+    public static void registerBlockProcessedListener(IBlockProcessedListener listener) {
+        if (listener == null) throw new NullPointerException("listener must not be null");
+        BLOCK_LISTENERS.add(listener);
+    }
+
+    /**
+     * Adds a treeCut listener. Thread-safe. Called by
+     * {@link dev.createrecipehooks.api.CreateRecipeHooks#registerTreeCut}.
+     */
+    public static void registerTreeCutListener(IBlockProcessedListener listener) {
+        if (listener == null) throw new NullPointerException("listener must not be null");
+        TREE_LISTENERS.add(listener);
     }
 
     // ------------------------------------------------------------------ //
@@ -94,6 +122,47 @@ public final class RecipeEventDispatcher {
                     listener.getClass().getName(),
                     ctx.getSource(),
                     ctx.getRecipeId(),
+                    e.getMessage(),
+                    e
+                );
+            }
+        }
+    }
+
+    /**
+     * Dispatches a blockProcessed event (Drill broke a block, Harvester cut a crop,
+     * Saw cut a lone block). Called exclusively by Mixin hooks, server tick thread only.
+     */
+    public static void dispatchBlockProcessed(BlockProcessedContext ctx) {
+        dispatchBlockContext(ctx, BLOCK_LISTENERS, "blockProcessed");
+    }
+
+    /**
+     * Dispatches a treeCut event (Saw felled a tree). Called exclusively by Mixin hooks,
+     * server tick thread only.
+     */
+    public static void dispatchTreeCut(BlockProcessedContext ctx) {
+        dispatchBlockContext(ctx, TREE_LISTENERS, "treeCut");
+    }
+
+    private static void dispatchBlockContext(BlockProcessedContext ctx,
+                                             List<IBlockProcessedListener> listeners,
+                                             String channel) {
+        if (ctx == null) {
+            LOGGER.warn("{} dispatch called with null context — ignoring", channel);
+            return;
+        }
+
+        for (IBlockProcessedListener listener : listeners) {
+            try {
+                listener.onBlockProcessed(ctx);
+            } catch (Exception e) {
+                LOGGER.error(
+                    "{} listener {} threw an exception for source={} block={}: {}",
+                    channel,
+                    listener.getClass().getName(),
+                    ctx.getSource(),
+                    ctx.getBlockId(),
                     e.getMessage(),
                     e
                 );

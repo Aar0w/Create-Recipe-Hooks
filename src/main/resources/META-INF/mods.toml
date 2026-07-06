@@ -27,3 +27,10 @@ issueTrackerURL = "https://github.com/Aar0w/Create-Recipe-Hooks/issues"
     versionRange = "[6.0.8,)"
     ordering = "AFTER"
     side = "BOTH"
+
+[[dependencies.createrecipehooks]]
+    modId = "kubejs"
+    mandatory = false
+    versionRange = "[2001.6.5,)"
+    ordering = "AFTER"
+    side = "BOTH"

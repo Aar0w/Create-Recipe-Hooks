@@ -47,6 +47,33 @@ public final class CreateRecipeHooks {
     }
 
     /**
+     * Registers a listener for block-processing events: one call per block broken by a
+     * Mechanical Drill (stationary or contraption), per crop cut by a Mechanical Harvester,
+     * and per lone block cut by a Mechanical Saw that is not part of a tree.
+     *
+     * <p>Same threading and lifetime rules as {@link #register}.
+     *
+     * @param listener the listener to add; must not be {@code null}
+     */
+    public static void registerBlockProcessed(@NotNull IBlockProcessedListener listener) {
+        RecipeEventDispatcher.registerBlockProcessedListener(listener);
+    }
+
+    /**
+     * Registers a listener for tree-felling events: one call per tree felled by a
+     * Mechanical Saw (stationary or contraption). The context carries
+     * {@link BlockProcessedContext#getLogCount()} and
+     * {@link BlockProcessedContext#getLeafCount()}.
+     *
+     * <p>Same threading and lifetime rules as {@link #register}.
+     *
+     * @param listener the listener to add; must not be {@code null}
+     */
+    public static void registerTreeCut(@NotNull IBlockProcessedListener listener) {
+        RecipeEventDispatcher.registerTreeCutListener(listener);
+    }
+
+    /**
      * Registers an {@link IHookProvider}, typically used by addon authors to declare
      * that their mod provides additional hook sources.
      *
