@@ -74,7 +74,7 @@ The event fires **server-side only** and is not cancellable.
 | `UNKNOWN` | Unrecognized addon going through `RecipeApplier` | ✅ when context is known | n/a |
 
 Fan events cover **both modes**: items on a belt and items lying in the air current in the world.
-Item Drain covers **three paths**: emptying recipes, fluid-capability containers (buckets), and potions (since v1.1.0).
+Item Drain covers **three paths**: emptying recipes, fluid-capability containers (buckets), and potions.
 
 ### Reserved sources (NO events are fired in v1)
 
@@ -182,7 +182,7 @@ The owner UUID is written into the block entity's NBT when a player places the b
 
 ## Script examples (KubeJS)
 
-Since v1.1.0 CRH registers its own KubeJS event group: `CRHEvents.recipeFinished`. The first
+CRH registers its own KubeJS event group: `CRHEvents.recipeFinished`. The first
 argument is an optional source filter; the event object resolves the attributed player for you
 via `event.getOwner()`. `getSource()` and `getRecipeId()` return plain strings.
 Place scripts in `kubejs/server_scripts/`. Ready-made test scripts for every machine live
@@ -266,20 +266,6 @@ CRHEvents.recipeFinished('MECHANICAL_PRESS', event => {
 });
 ```
 
-### Legacy path: EventJS (Forge only)
-
-Before v1.1.0 scripts subscribed through the **EventJS** addon:
-
-```javascript
-NativeEvents.onEvent(
-    Java.loadClass('dev.createrecipehooks.neoforge.CreateRecipeFinishedEvent'),
-    event => { /* raw Forge event; getSource().name(), manual UUID resolution */ }
-);
-```
-
-This still works on Forge and existing scripts do not need migration, but new scripts should
-use `CRHEvents`, which also works without EventJS installed.
-
 ## Scripting pitfalls
 
 - **Do not declare `const`/`let` at the top level of a file.** KubeJS loads all server_scripts into one shared scope, so identical names in two files cause `TypeError: redeclaration of const`. Keep all declarations inside the callback.
@@ -307,6 +293,13 @@ MinecraftForge.EVENT_BUS.addListener((CreateTreeCutEvent event) -> {
 ```
 
 Public API: `dev.createrecipehooks.api` (`RecipeFinishedContext`, `BlockProcessedContext`, `RecipeSource`, `FluidAmount`, `CreateRecipeHooks.register(...)`, `CreateRecipeHooks.registerBlockProcessed(...)`, `CreateRecipeHooks.registerTreeCut(...)`). The `RecipeSource` enum is stable: values are never removed between minor versions; new ones may be added.
+
+### Notes for mods depending on CRH
+
+- **Events fire on the logical server only.** In singleplayer that is the integrated server, so everything works there identically; nothing special is needed. If your mod wants to show something on the client (HUD, toasts, particles) in response to an event, send your own packet: CRH provides no networking.
+- **Listeners are synchronous** and run on the server tick thread. Return promptly; for heavy work (databases, HTTP) hand the data off to your own worker thread. See the threading notes in the `RecipeFinishedContext` javadoc.
+- **Declaring the dependency**: add CRH to your `mods.toml` as usual. The jar loads harmlessly on clients, so a regular both-sides dependency is fine. If your mod is client and server but you want CRH to stay on the server only, mark the dependency with `side="SERVER"`.
+- **License**: linking against the API imposes no obligations, your mod can use any license (LGPL linking exception). Only forks and derivatives of CRH itself must remain LGPL.
 
 ## Debug mode
 
