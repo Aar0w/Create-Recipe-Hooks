@@ -24,7 +24,7 @@ import java.util.UUID;
  * })
  * }</pre>
  *
- * <p>Not cancellable — the block is already gone when this fires.
+ * <p>Not cancellable, the block is already gone when this fires.
  */
 public class BlockProcessedEventJS extends EventJS {
 

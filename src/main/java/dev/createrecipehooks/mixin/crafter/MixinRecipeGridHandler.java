@@ -22,42 +22,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Hook #7 — MechanicalCrafter.
- *
- * <h3>1.20.1 Migration notes</h3>
- * <ul>
- *   <li>{@code CraftingInput} → does not exist; erased generic type is {@code Container}</li>
- *   <li>{@code RecipeHolder} → does not exist; results are raw {@code Recipe<?>}</li>
- *   <li>{@code AllRecipeTypes.find(Container, Level)} → {@code Optional<T extends Recipe<C>>}</li>
- *   <li>{@code RecipeManager.getRecipeFor(RecipeType, Container, Level)} → {@code Optional<T>}</li>
- *   <li>{@code Recipe.getId()} exists in 1.20.1 ✅</li>
- * </ul>
- *
- * <h3>SRG name verification — {@code m_44015_}</h3>
- * <p>WrapOperation #B targets {@code RecipeManager.getRecipeFor(RecipeType, Container, Level)}
- * with {@code remap = false} using the SRG name {@code m_44015_}.
- * This name has been verified against MCP config {@code 1.20.1-20230612.114412}:
- * <pre>
- * Mojang mappings (client_mappings.txt):
- *   net.minecraft.world.item.crafting.RecipeManager  →  cjd
- *   getRecipeFor(RecipeType, Container, Level)         →  a  (obfuscated)
- *
- * Forge joined.tsrg:
- *   cjd  a (Lcjf;Lbdq;Lcmm;)Ljava/util/Optional;  →  m_44015_
- *   cjf = RecipeType, bdq = Container, cmm = Level  (verified)
- * </pre>
- * In production Forge 47.x (MC 1.20.1), class names are remapped to Mojang canonical form
- * while method names remain at SRG level at the time Mixin processes the bytecode.
- * Therefore {@code m_44015_} is correct for production; {@code remap = false} prevents
- * the annotation processor from attempting to remap in DEV (where the method is
- * named {@code getRecipeFor}). The WrapOperation silently no-ops in DEV — expected.
+ * Fires the MECHANICAL_CRAFTER event when a crafter chain produces its result,
+ * covering both Create's mechanical crafting recipes and vanilla crafting.
+ * The SRG method name in the vanilla-path target is intentional: production Forge
+ * keeps SRG method names at mixin time, and the wrap simply no-ops in dev.
  */
 @Mixin(value = RecipeGridHandler.class, remap = false)
 public abstract class MixinRecipeGridHandler {
 
     private static final ThreadLocal<Recipe<?>> CAPTURED_RECIPE = new ThreadLocal<>();
-
-    // ── FIX #4: clear at HEAD ───────────────────────────────────────────────
 
     @Inject(
         method = "tryToApplyRecipe(Lnet/minecraft/world/level/Level;" +
@@ -73,10 +46,7 @@ public abstract class MixinRecipeGridHandler {
         CAPTURED_RECIPE.remove();
     }
 
-    // ── WrapOperation #A: MechanicalCrafting path ───────────────────────────
-    // AllRecipeTypes.find(C extends Container, Level) → Optional<T extends Recipe<C>>
-    // Erased descriptor uses Container as second parameter type.
-
+    // Mechanical crafting recipe path.
     @WrapOperation(
         method = "tryToApplyRecipe(Lnet/minecraft/world/level/Level;" +
                  "Lcom/simibubi/create/content/kinetics/crafter/RecipeGridHandler$GroupedItems;)" +
@@ -100,10 +70,7 @@ public abstract class MixinRecipeGridHandler {
         return result;
     }
 
-    // ── WrapOperation #B: Vanilla crafting path ─────────────────────────────
-    // RecipeManager.getRecipeFor(RecipeType, C extends Container, Level) → Optional<T>
-    // Erased descriptor uses Container as second parameter type.
-
+    // Vanilla crafting recipe path.
     @WrapOperation(
         method = "tryToApplyRecipe(Lnet/minecraft/world/level/Level;" +
                  "Lcom/simibubi/create/content/kinetics/crafter/RecipeGridHandler$GroupedItems;)" +
@@ -128,8 +95,6 @@ public abstract class MixinRecipeGridHandler {
         result.ifPresent(r -> CAPTURED_RECIPE.set((Recipe<?>) r));
         return result;
     }
-
-    // ── Inject RETURN ────────────────────────────────────────────────────────
 
     @Inject(
         method = "tryToApplyRecipe(Lnet/minecraft/world/level/Level;" +

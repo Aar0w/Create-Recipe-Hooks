@@ -31,6 +31,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Mechanical Saw hooks: fires MECHANICAL_SAW recipe events for the upward-facing saw,
+ * treeCut and blockProcessed events for the horizontal world-cutting saw, and tracks
+ * the Saw's owner for attribution.
+ */
 @Mixin(value = SawBlockEntity.class, remap = false)
 public abstract class MixinSawBlockEntity implements ICrhOwnable {
 
@@ -91,14 +96,7 @@ public abstract class MixinSawBlockEntity implements ICrhOwnable {
         RecipeEventDispatcher.dispatch(builder.build());
     }
 
-    // ------------------------------------------------------------------ //
-    //  Tree cutting (horizontal saw breaking world blocks)                 //
-    //  Same two-path split as MixinSawMovementBehaviour: findDynamicTree   //
-    //  (Dynamic Trees mod, unknown size) and findTree (Create's scan —     //
-    //  non-empty logs = treeCut, empty = lone-block blockProcessed).       //
-    //  The pos argument of both wrapped calls is the broken block's pos.   //
-    // ------------------------------------------------------------------ //
-
+    // Tree cutting (horizontal saw): non-empty logs = treeCut, empty = blockProcessed.
     @WrapOperation(
         method = "onBlockBroken(Lnet/minecraft/world/level/block/state/BlockState;)V",
         at = @At(value = "INVOKE",

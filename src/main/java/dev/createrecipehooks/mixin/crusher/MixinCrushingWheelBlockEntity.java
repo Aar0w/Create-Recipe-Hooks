@@ -14,22 +14,16 @@ import org.spongepowered.asm.mixin.Unique;
 import java.util.UUID;
 
 /**
- * Adds {@link ICrhOwnable} UUID tracking to the crushing wheel itself (the player-placed
- * block), so that {@link MixinCrushingWheelController} can fall back to the wheel owner
- * when the crushed item carries no thrower UUID (belt/hopper-fed automation).
- *
- * <h3>Why overrides instead of the usual write/read injections</h3>
- * {@code CrushingWheelBlockEntity} does not declare {@code write}/{@code read} (verified
- * via javap of Create Forge 6.0.8) — they are inherited from {@link KineticBlockEntity}.
- * A {@code @Inject} can only target declared methods, so this mixin extends the superclass
- * and merges real overrides into the target instead.
+ * Owner tracking for the Crushing Wheel block, used by {@link MixinCrushingWheelController}
+ * as the attribution fallback for belt and hopper fed input. The wheel block entity does
+ * not declare its own NBT methods, so overrides are merged in via the superclass.
  */
 @Mixin(value = CrushingWheelBlockEntity.class, remap = false)
 public abstract class MixinCrushingWheelBlockEntity extends KineticBlockEntity implements ICrhOwnable {
 
     @Unique private @Nullable UUID crh$ownerUUID = null;
 
-    // Never invoked — required only so javac accepts the superclass extension.
+    // Never invoked, required only so javac accepts the superclass extension.
     private MixinCrushingWheelBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }

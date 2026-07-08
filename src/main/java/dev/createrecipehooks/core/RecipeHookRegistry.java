@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Registry that manages {@link IHookProvider} registrations.
  *
  * <p>Providers are keyed by their {@link IHookProvider#getId() id}. A provider
- * with a duplicate id is rejected with a warning — this prevents accidental
+ * with a duplicate id is rejected with a warning, this prevents accidental
  * double-registration from class-loading order issues.
  *
  * <p>When a provider is accepted its {@link IHookProvider#register(IRegistrar)}
@@ -64,7 +64,7 @@ public final class RecipeHookRegistry implements IRegistrar {
 
         LOGGER.info("[CreateRecipeHooks] Registered hook provider: '{}'", id);
 
-        // Pass 'this' as IRegistrar — the provider sees only the api interface
+        // Pass 'this' as IRegistrar, the provider sees only the api interface
         try {
             provider.register(this);
         } catch (Exception e) {

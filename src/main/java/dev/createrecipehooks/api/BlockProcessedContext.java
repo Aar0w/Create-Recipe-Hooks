@@ -21,11 +21,11 @@ import java.util.Objects;
  *
  * <h3>Which events use this context</h3>
  * <ul>
- *   <li><strong>blockProcessed</strong> — one event per processed block.
+ *   <li><strong>blockProcessed</strong>, one event per processed block.
  *       Sources: {@link RecipeSource#MECHANICAL_DRILL},
  *       {@link RecipeSource#MECHANICAL_HARVESTER},
  *       {@link RecipeSource#MECHANICAL_SAW} (a sawed block that is not part of a tree).</li>
- *   <li><strong>treeCut</strong> — one event per felled tree.
+ *   <li><strong>treeCut</strong>, one event per felled tree.
  *       Source: {@link RecipeSource#MECHANICAL_SAW} only.
  *       {@link #getLogCount()} / {@link #getLeafCount()} carry the tree size.</li>
  * </ul>
@@ -33,10 +33,10 @@ import java.util.Objects;
  * <h3>Field availability</h3>
  * <ul>
  *   <li>{@link #getSource()}, {@link #getLevel()}, {@link #getBlockState()},
- *       {@link #getTimestamp()} — always present, never {@code null}.</li>
- *   <li>{@link #getBlockPos()} — position of the processed block (for treeCut: the block
+ *       {@link #getTimestamp()}, always present, never {@code null}.</li>
+ *   <li>{@link #getBlockPos()}, position of the processed block (for treeCut: the block
  *       the saw physically touched). May be {@code null} only if a hook could not capture it.</li>
- *   <li>{@link #getLogCount()} / {@link #getLeafCount()} — {@code >= 0} for treeCut events
+ *   <li>{@link #getLogCount()} / {@link #getLeafCount()}, {@code >= 0} for treeCut events
  *       from Create's own TreeCutter; {@code -1} for blockProcessed events and for trees
  *       felled through the Dynamic Trees mod integration (size unknown).</li>
  * </ul>

@@ -24,25 +24,9 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Hook for Create Enchantment Industry — CEI Printer.
- *
- * <p>Soft dependency: {@code @Pseudo} tells the Mixin loader to silently skip this
- * mixin when CEI is not installed. No code from this class runs without CEI.
- *
- * <h3>Injection point</h3>
- * <p>Wraps the {@code Printing.print()} static call inside
- * {@code PrinterBlockEntity.whenItemHeld(TransportedItemStack, TransportedItemStackHandlerBehaviour)}.
- * This call site (bytecode offset 351 in CEI 1.3.3) is the single point where the
- * enchantment-copy operation is committed. It is reached only when:
- * <ol>
- *   <li>The Printer's countdown has expired ({@code processingTicks == 10}).</li>
- *   <li>All preconditions pass: valid entry, correct ink, sufficient quantity.</li>
- * </ol>
- * Early-exit PASS/HOLD paths (no match, too expensive, wrong ink, still counting down)
- * do not reach this call site, so no false-positive events are fired.
- *
- * <h3>Verified against</h3>
- * {@code create_enchantment_industry-1.3.3-for-create-6.0.6.jar}
+ * Fires the CEI_PRINTER event when the Create Enchantment Industry Printer commits a
+ * copy operation, and tracks the Printer's owner. Soft dependency: {@code @Pseudo}
+ * skips this mixin silently when CEI is not installed.
  */
 @Pseudo
 @Mixin(

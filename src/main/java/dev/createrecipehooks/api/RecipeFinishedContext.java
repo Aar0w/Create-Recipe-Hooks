@@ -19,57 +19,13 @@ import java.util.Objects;
 /**
  * Snapshot of data available at the moment a Create recipe completed.
  *
- * <h3>Field availability</h3>
- * <ul>
- *   <li>{@link #getSource()}, {@link #getLevel()}, {@link #getTimestamp()} —
- *       <strong>always present</strong>, never {@code null}.</li>
- *   <li>All other fields are optional; check for {@code null} / empty list before use.</li>
- * </ul>
- *
- * <h3>Immutability — structural, not deep</h3>
- * <p>The <em>structure</em> of this object is immutable: field references cannot change
- * after construction, and all collection fields are unmodifiable views.
- * However, some referenced Minecraft objects are <strong>not deeply immutable</strong>:
- * <ul>
- *   <li>{@link #getLevel()} — a live, mutable {@code Level}; see threading note below.</li>
- *   <li>{@link #getPlayer()} — a live, mutable {@code ServerPlayer}.</li>
- *   <li>{@link #getItemOutputs()} / {@link #getItemInputs()} — lists are unmodifiable,
- *       but the {@code ItemStack} elements inside are mutable objects.
- *       <strong>Do not mutate them.</strong> Treat them as read-only snapshots.</li>
- *   <li>{@link #getFluidOutputs()} — fully deep-immutable ({@link FluidAmount} records).</li>
- * </ul>
- *
- * <h3>Thread safety — READ THIS FOR ASYNC USE</h3>
- * <p>Only the following fields are safe to read from a thread other than the server tick thread:
- * <ul>
- *   <li>{@link #getSource()} — enum constant ✅</li>
- *   <li>{@link #getTimestamp()} — primitive long ✅</li>
- *   <li>{@link #getBlockPos()} — immutable value object ✅</li>
- *   <li>{@link #getRecipeId()} — immutable {@code ResourceLocation} ✅</li>
- *   <li>{@link #getRecipe()} — read-only registered singleton ✅</li>
- *   <li>{@link #getFluidOutputs()} — deep-immutable records ✅</li>
- *   <li>{@link #getMetadata()} — safe if addon-supplied values are thread-safe ⚠️</li>
- * </ul>
- * <p><strong>DO NOT access from other threads:</strong>
- * {@link #getLevel()}, {@link #getPlayer()}, or any {@code ItemStack} from
- * {@link #getItemOutputs()} / {@link #getItemInputs()}. These are live Minecraft objects
- * that are not safe for concurrent access.
- *
- * <p>For async hand-off (WebSocket, analytics, databases), copy the primitive/immutable
- * fields you need before dispatching to a worker thread:
- * <pre>{@code
- * CreateRecipeHooks.register(ctx -> {
- *     // Extract safe fields on server tick thread:
- *     RecipeSource src   = ctx.getSource();
- *     ResourceLocation id = ctx.getRecipeId();
- *     List<FluidAmount> fluids = ctx.getFluidOutputs();
- *     // Hand safe copies to worker:
- *     executor.submit(() -> sendToDatabase(src, id, fluids));
- * });
- * }</pre>
- *
- * <h3>No Create or NeoForge imports</h3>
- * This class depends only on Minecraft common API (shared between NeoForge and Fabric).
+ * <p>{@link #getSource()}, {@link #getLevel()} and {@link #getTimestamp()} are always
+ * present; all other fields are optional, check for {@code null} or empty list before use.
+ * The object is structurally immutable, but {@link #getLevel()}, {@link #getPlayer()} and
+ * the {@code ItemStack}s inside the lists are live Minecraft objects: do not mutate them
+ * and read them only on the server tick thread. Immutable fields ({@code source},
+ * {@code timestamp}, {@code blockPos}, {@code recipeId}, {@code fluidOutputs}) are safe
+ * to hand off to worker threads.
  *
  * @see RecipeSource
  * @see IRecipeFinishedListener
@@ -95,7 +51,7 @@ public final class RecipeFinishedContext {
     private final Map<String, Object>    metadata;
 
     // ------------------------------------------------------------------ //
-    //  Constructor — private, use Builder                                  //
+    //  Constructor, private, use Builder                                  //
     // ------------------------------------------------------------------ //
 
     private RecipeFinishedContext(Builder b) {
@@ -138,7 +94,7 @@ public final class RecipeFinishedContext {
      * inside the completing mixin, immediately before
      * {@link dev.createrecipehooks.core.RecipeEventDispatcher#dispatch} is called.
      * Useful for performance profiling or ordering events.
-     * Not a wall-clock time — subtract two timestamps to get nanosecond durations.
+     * Not a wall-clock time, subtract two timestamps to get nanosecond durations.
      */
     public long getTimestamp() { return timestamp; }
 
@@ -153,7 +109,7 @@ public final class RecipeFinishedContext {
      * <ul>
      *   <li>Fan processing (ItemEntity in the world, not a stationary block)</li>
      *   <li>Belt Deployer (position comes from the transported item, not captured)</li>
-     *   <li>Sand Paper (held item — no block position)</li>
+     *   <li>Sand Paper (held item, no block position)</li>
      * </ul>
      */
     @Nullable
@@ -165,7 +121,7 @@ public final class RecipeFinishedContext {
      * <p>{@code null} for:
      * <ul>
      *   <li>Item Drain when emptying via fluid capability with no matching
-     *       {@code EmptyingRecipe} — the fluid is extracted directly from the container's
+     *       {@code EmptyingRecipe}, the fluid is extracted directly from the container's
      *       fluid handler, so no recipe object or ID exists.</li>
      * </ul>
      * <p>All other v1 sources have a recipe object and therefore a non-null recipe ID.
@@ -184,7 +140,7 @@ public final class RecipeFinishedContext {
      * <ul>
      *   <li>If {@code getRecipe() != null} then {@code getRecipeId() != null} (always).</li>
      *   <li>If {@code getRecipeId() != null} then {@code getRecipe()} may still be
-     *       {@code null} — for example, Mechanical Crafter vanilla crafting stores only
+     *       {@code null}, for example, Mechanical Crafter vanilla crafting stores only
      *       the recipe id (captured from {@code RecipeManager}), not the recipe object.</li>
      * </ul>
      * <p>When both are needed, check {@code getRecipe()} first; fall back to
@@ -198,9 +154,9 @@ public final class RecipeFinishedContext {
      *
      * <h4>v1 availability</h4>
      * <ul>
-     *   <li>{@link RecipeSource#SAND_PAPER} (hand use by player only) — the real
+     *   <li>{@link RecipeSource#SAND_PAPER} (hand use by player only), the real
      *       {@code ServerPlayer}. Non-null.</li>
-     *   <li>All other sources, including {@link RecipeSource#DEPLOYER_BELT} — {@code null}.
+     *   <li>All other sources, including {@link RecipeSource#DEPLOYER_BELT}, {@code null}.
      *       The Deployer's {@code DeployerFakePlayer} is <em>not</em> captured in v1.</li>
      * </ul>
      *
@@ -216,7 +172,7 @@ public final class RecipeFinishedContext {
      * Fluid-only recipes (e.g. some Basin recipes) may return an empty list here.
      *
      * <p><strong>Do not mutate the {@code ItemStack} objects in this list.</strong>
-     * They are shallow snapshots — the list structure is immutable, but the stacks
+     * They are shallow snapshots, the list structure is immutable, but the stacks
      * themselves are mutable Minecraft objects. Treat them as read-only.
      * Call {@code stack.copy()} if you need to store or modify a stack.
      */
@@ -243,7 +199,7 @@ public final class RecipeFinishedContext {
      *   <li>Item Drain (emptying fluid containers)</li>
      * </ul>
      *
-     * <p>Each entry is a {@link FluidAmount} — a platform-independent snapshot
+     * <p>Each entry is a {@link FluidAmount}, a platform-independent snapshot
      * of fluid type and quantity in milli-buckets. No dependency on Forge's FluidStack.
      */
     @NotNull

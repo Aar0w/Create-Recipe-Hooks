@@ -14,24 +14,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.UUID;
 
 /**
- * Adds {@link ICrhOwnable} UUID tracking to {@link MechanicalCrafterBlockEntity}.
- *
- * <h3>Why @At("INVOKE") on tick() instead of checkCompletedRecipe()</h3>
- * <p>{@code tryToApplyRecipe(Level, GroupedItems)} is called from {@code tick()}, not from
- * {@code checkCompletedRecipe(boolean)} — confirmed via javap of Create 6.0.8:
- * {@code tick()} offset 192 calls {@code RecipeGridHandler.tryToApplyRecipe}.
- * {@code checkCompletedRecipe} instead calls {@code RecipeGridHandler.getAllCraftersOfChainIf}
- * and then {@code List.forEach} with a lambda to propagate the check across the crafter network.
- *
- * <p>Only the "output" crafter (the last one in the chain that has no targeting crafter)
- * reaches the {@code tryToApplyRecipe} call site in its own {@code tick()} invocation.
- * Setting {@link CrhOwnerContext} immediately before that call ensures the correct UUID
- * is available when {@link MixinRecipeGridHandler#crh$onCrafterResult} reads it.
- *
- * <p>NBT: only SET when {@code "crh:owner"} is present — never clear if absent.
- * Create calls {@code read()} during network formation before any {@code write()} has
- * persisted the key; the old "else clear" logic would wipe the UUID set by
- * {@code NeoForgeAdapter.onOwnableBlockPlaced()}.
+ * Owner tracking for the Mechanical Crafter. The output crafter's UUID is handed to
+ * {@link MixinRecipeGridHandler} through {@link CrhOwnerContext} around the
+ * {@code tryToApplyRecipe} call in {@code tick()}.
  */
 @Mixin(value = MechanicalCrafterBlockEntity.class, remap = false)
 public abstract class MixinMechanicalCrafterBlockEntity implements ICrhOwnable {
@@ -53,9 +38,7 @@ public abstract class MixinMechanicalCrafterBlockEntity implements ICrhOwnable {
             crh$ownerUUID = tag.getUUID("crh:owner");
     }
 
-    // Set CrhOwnerContext from THIS instance right before tryToApplyRecipe executes.
-    // tryToApplyRecipe is called from tick(), not checkCompletedRecipe — confirmed via javap.
-    // Only the "output" crafter (the one with no targeting crafter) reaches this call site.
+    // Only the output crafter (the one with no targeting crafter) reaches this call site.
     @Inject(
         method = "tick()V",
         at = @At(

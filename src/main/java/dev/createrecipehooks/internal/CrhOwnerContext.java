@@ -13,7 +13,7 @@ import java.util.UUID;
  * this value when building the {@link dev.createrecipehooks.api.RecipeFinishedContext}
  * and add it as metadata under key {@code "createrecipehooks:owner_uuid"}.
  *
- * <p>Thread safety: ThreadLocal — each server thread has its own value. No cross-thread
+ * <p>Thread safety: ThreadLocal, each server thread has its own value. No cross-thread
  * sharing; Create always dispatches machine ticks on the server tick thread.
  */
 public final class CrhOwnerContext {

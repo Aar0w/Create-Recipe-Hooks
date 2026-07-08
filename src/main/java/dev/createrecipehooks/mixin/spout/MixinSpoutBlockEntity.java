@@ -18,16 +18,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.UUID;
 
 /**
- * Adds {@link ICrhOwnable} UUID tracking to {@link SpoutBlockEntity}.
- *
- * <p>The UUID is persisted via Create's {@code write(CompoundTag, boolean)} /
- * {@code read(CompoundTag, boolean)} (not standard {@code saveAdditional} / {@code load},
- * which are inherited from {@code SmartBlockEntity} and delegate here).
- * We guard on {@code !clientPacket} so the UUID is not included in client-sync packets.
- *
- * <p>Before {@code whenItemHeld()} delegates to {@code FillingBySpout.fillItem()},
- * the owner UUID is pushed into {@link CrhOwnerContext} so that
- * {@code MixinFillingBySpout} can read it when building the recipe-finished context.
+ * Owner tracking for the Spout. The UUID is handed to {@link MixinFillingBySpout}
+ * through {@link CrhOwnerContext} for the duration of {@code whenItemHeld()}.
  */
 @Mixin(value = SpoutBlockEntity.class, remap = false)
 public abstract class MixinSpoutBlockEntity implements ICrhOwnable {

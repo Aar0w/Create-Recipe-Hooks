@@ -10,7 +10,7 @@ import dev.latvian.mods.kubejs.event.Extra;
 import dev.latvian.mods.kubejs.script.ScriptType;
 
 /**
- * KubeJS integration — registers the {@code CRHEvents} group.
+ * KubeJS integration, registers the {@code CRHEvents} group.
  *
  * <p>Loaded exclusively by KubeJS via {@code kubejs.plugins.txt}; when KubeJS is not
  * installed this class is never classloaded, so the KubeJS dependency stays fully
@@ -18,23 +18,18 @@ import dev.latvian.mods.kubejs.script.ScriptType;
  *
  * <h3>Script API</h3>
  * <pre>{@code
- * // All sources:
- * CRHEvents.recipeFinished(event => { ... })
- *
- * // Only one source (extra filter — dispatched by KubeJS, no manual if-check):
- * CRHEvents.recipeFinished('MECHANICAL_PRESS', event => { ... })
+ * CRHEvents.recipeFinished(event => { ... })                      // all sources
+ * CRHEvents.recipeFinished('MECHANICAL_PRESS', event => { ... })  // one source
+ * CRHEvents.blockProcessed('MECHANICAL_DRILL', event => { ... })
+ * CRHEvents.treeCut('MECHANICAL_SAW', event => { ... })
  * }</pre>
- *
- * <p>Verified against KubeJS-Forge 2001.6.5-build.16 (javap):
- * {@code EventGroup.of / server / register}, {@code EventHandler.extra(Extra.STRING)},
- * {@code post(ScriptTypeHolder, Object extraId, EventJS)}.
  */
 public class CrhKubeJSPlugin extends KubeJSPlugin {
 
     public static final EventGroup GROUP = EventGroup.of("CRHEvents");
 
     /**
-     * {@code Extra.STRING} (not REQUIRES_STRING) — the source filter is optional:
+     * {@code Extra.STRING} (not REQUIRES_STRING), the source filter is optional:
      * scripts may subscribe with or without it.
      */
     public static final EventHandler RECIPE_FINISHED = GROUP

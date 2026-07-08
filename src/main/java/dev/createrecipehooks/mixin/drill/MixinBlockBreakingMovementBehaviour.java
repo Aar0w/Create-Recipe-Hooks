@@ -19,15 +19,8 @@ import java.util.UUID;
 
 /**
  * Mechanical Drill as a contraption actor: fires a blockProcessed event once per broken
- * block. Attribution comes from the drill's serialized block-entity NBT that travels
- * inside the contraption ({@code MovementContext.blockEntityData}).
- *
- * <p>The hook targets the <em>base</em> {@code onBlockBroken}: {@code DrillMovementBehaviour}
- * does not override it, so drill breaks arrive here directly. {@code PloughMovementBehaviour}
- * overrides it but calls {@code super}, so its calls also arrive here — the
- * {@code instanceof DrillMovementBehaviour} filter keeps the source honest.
- * {@code SawMovementBehaviour} replaces the method without a super call and never reaches
- * this hook (the saw has its own mixin).
+ * block, attributed via the drill's NBT that travels inside the contraption. The
+ * instanceof filter excludes the Plough, whose override calls super into this method.
  */
 @Mixin(value = BlockBreakingMovementBehaviour.class, remap = false)
 public class MixinBlockBreakingMovementBehaviour {

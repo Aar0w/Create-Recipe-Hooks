@@ -15,21 +15,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.UUID;
 
 /**
- * Adds {@link ICrhOwnable} UUID tracking to {@link MechanicalPressBlockEntity}.
- *
- * <p>UUID is set when the press is placed by a player
- * ({@link dev.createrecipehooks.neoforge.NeoForgeAdapter#onOwnableBlockPlaced}).
- *
- * <h3>Belt mode — tryProcessOnBelt</h3>
- * <p>Confirmed via javap (Create 6.0.8), offset 78:
- * {@code invokestatic RecipeApplier.applyRecipeOn(Level, ItemStack, Recipe, Z) → List}.
- * {@link MixinRecipeApplier} fires the {@code MECHANICAL_PRESS} event at RETURN of
- * that call; {@link CrhOwnerContext} carries the UUID into it.
- *
- * <h3>World mode — tryProcessInWorld</h3>
- * <p>Calls the same {@code applyRecipeOn(Level, ItemStack, Recipe, Z)} overload at
- * offset 105 (after an earlier {@code applyRecipeOn(ItemEntity, Recipe, Z)} at offset 72
- * which uses a different signature and is not hooked by {@link MixinRecipeApplier}).
+ * Owner tracking for the Mechanical Press. The UUID is carried through
+ * {@link CrhOwnerContext} around both processing paths (belt and world) so the shared
+ * RecipeApplier hook can attribute MECHANICAL_PRESS events.
  */
 @Mixin(value = MechanicalPressBlockEntity.class, remap = false)
 public abstract class MixinMechanicalPressBlockEntity implements ICrhOwnable {
@@ -51,8 +39,7 @@ public abstract class MixinMechanicalPressBlockEntity implements ICrhOwnable {
             crh$ownerUUID = tag.getUUID("crh:owner");
     }
 
-    // ── Belt mode ─────────────────────────────────────────────────────────────
-
+    // Belt mode.
     @Inject(
         method = "tryProcessOnBelt(" +
                  "Lcom/simibubi/create/content/kinetics/belt/transport/TransportedItemStack;" +
@@ -86,8 +73,7 @@ public abstract class MixinMechanicalPressBlockEntity implements ICrhOwnable {
         CrhOwnerContext.clear();
     }
 
-    // ── World mode ────────────────────────────────────────────────────────────
-
+    // World mode.
     @Inject(
         method = "tryProcessInWorld(Lnet/minecraft/world/entity/item/ItemEntity;Z)Z",
         at = @At(

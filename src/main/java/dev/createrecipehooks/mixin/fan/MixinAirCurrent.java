@@ -12,28 +12,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Sets {@link CrhOwnerContext} for the entire duration of {@code AirCurrent.tick()},
- * covering both fan processing modes confirmed via javap of Create 6.0.8:
- *
- * <pre>
- * AirCurrent.tick()  [offset 149]
- *   → tickAffectedEntities(Level)          ← world-mode: ItemEntity in air current
- *       → FanProcessing.applyProcessing(ItemEntity, FanProcessingType)
- *   → tickAffectedHandlers()  [offset 153] ← belt-mode: TransportedItemStack
- *       → handleProcessingOnAllItems(lambda)
- *           → FanProcessing.applyProcessing(TransportedItemStack, Level, FanProcessingType)
- *   Both paths → RecipeApplier.applyRecipeOn() ← MixinRecipeApplier reads CrhOwnerContext
- * </pre>
- *
- * <p>The previous implementation injected only into {@code tickAffectedHandlers()} at
- * {@code INVOKE handleProcessingOnAllItems}, which missed world-mode items processed
- * through {@code tickAffectedEntities(Level)}. Injecting into {@code tick()} HEAD/RETURN
- * is the single stable point that covers both paths.
- *
- * <p>{@code AirCurrent.source} is the {@code EncasedFanBlockEntity} that drives this
- * air current (confirmed: only implementor of {@code IAirCurrentSource} in Create).
- * The {@code instanceof ICrhOwnable} guard handles the case where a third-party mod
- * provides another {@code IAirCurrentSource} implementation.
+ * Carries the Fan owner's UUID through {@link CrhOwnerContext} for the whole
+ * {@code AirCurrent.tick()}, covering both fan modes (items on belts and items lying
+ * in the air current) so {@link MixinRecipeApplier} can attribute FAN_* events.
  */
 @Mixin(value = AirCurrent.class, remap = false)
 public abstract class MixinAirCurrent {

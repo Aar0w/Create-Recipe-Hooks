@@ -22,39 +22,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Hook #1 — Basin / Mixer / Compactor / Pressing-on-Basin.
- * Risk: STABLE
- *
- * <h3>Target</h3>
- * {@code BasinRecipe.apply(BasinBlockEntity, Recipe<?>, boolean test)} — private static.
- *
- * <h3>Injection point</h3>
- * {@code @WrapOperation} on {@code basin.acceptOutputs(recipeOutputItems, recipeOutputFluids, simulate)}.
- *
- * {@code apply()} loops over {@code Iterate.trueAndFalse}:
- * <ol>
- *   <li>First iteration: {@code simulate=true} — calculate outputs, check capacity.</li>
- *   <li>Second iteration: {@code simulate=false} — consume inputs, commit outputs.</li>
- * </ol>
- * We fire only on {@code simulate=false} AND {@code test=false} (not a match-check call).
- *
- * <h3>Available data</h3>
- * <ul>
- *   <li>{@code recipe} — full Recipe object with id (parameter of apply)</li>
- *   <li>{@code basin} — BasinBlockEntity → Level, BlockPos</li>
- *   <li>{@code itemOutputs} — List&lt;ItemStack&gt; (arguments to acceptOutputs)</li>
- *   <li>{@code fluidOutputs} — List&lt;FluidStack&gt; (arguments to acceptOutputs)</li>
- * </ul>
- *
- * <h3>Duplicate protection</h3>
- * Basin does not go through RecipeApplier. No overlap with MixinRecipeApplier.
- *
- * <h3>Addons covered</h3>
- * <ul>
- *   <li>CEI Infuser (calls BasinRecipe.apply via BasinOperatingBlockEntity.applyBasinRecipe)</li>
- *   <li>Steam 'n' Rails (MixinBasinRecipe patches apply, our hook fires after it)</li>
- *   <li>PowerGrid (BasinRecipeMixin patches apply for NBT transfer, our hook fires after)</li>
- * </ul>
+ * Fires the BASIN event when a basin recipe commits its outputs (Mixer, Compactor,
+ * pressing on a Basin, and addons that go through {@code BasinRecipe.apply}).
  */
 @Mixin(value = BasinRecipe.class, remap = false)
 public abstract class MixinBasinRecipe {
@@ -74,7 +43,6 @@ public abstract class MixinBasinRecipe {
             List<FluidStack> fluidOutputs,
             boolean simulate,
             Operation<Boolean> original,
-            // Captured from outer apply() parameters via @Local(argsOnly=true)
             @Local(argsOnly = true) Recipe<?> recipe,
             @Local(argsOnly = true) boolean test
     ) {

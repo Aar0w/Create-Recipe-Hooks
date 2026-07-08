@@ -25,7 +25,7 @@ import java.util.UUID;
  * })
  * }</pre>
  *
- * <p>Not cancellable — the recipe has already been applied when this fires.
+ * <p>Not cancellable, the recipe has already been applied when this fires.
  */
 public class RecipeFinishedEventJS extends EventJS {
 

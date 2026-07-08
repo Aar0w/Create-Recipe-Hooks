@@ -16,16 +16,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import java.util.List;
 
 /**
- * Hook #10 — Sequenced Assembly final step.
- * Risk: MODERATE (ThreadLocal dependency)
- *
- * <h3>1.20.1 Migration</h3>
- * No changes to this mixin's code — the {@code advance(ResourceLocation, ItemStack, RandomSource)}
- * and {@code rollResult(RandomSource)} signatures exist in Create 0.5.1.f for 1.20.1.
- * The DataComponents reference is in {@link MixinRecipeApplier} (deduplication),
- * not in this class.
- *
- * <p>The ThreadLocal Level capture pattern remains identical.
+ * Fires the SEQUENCED_ASSEMBLY event when the final step of a sequenced assembly
+ * produces the finished item. Intermediate steps do not fire events.
  */
 @Mixin(value = SequencedAssemblyRecipe.class, remap = false)
 public abstract class MixinSequencedAssemblyRecipe {
@@ -43,15 +35,13 @@ public abstract class MixinSequencedAssemblyRecipe {
             Operation<ItemStack> original,
             @Local(argsOnly = true) ItemStack input
     ) {
-        // Capture before the call so clear() in finally always uses the right Level
         Level level = SequencedAssemblyLevelCapture.current();
 
         ItemStack result;
         try {
             result = original.call(self);
         } finally {
-            // Always clear regardless of rollResult() throwing — prevents stale Level
-            // on the next SA completion on this thread.
+            // Always clear so a stale Level never leaks into the next completion.
             SequencedAssemblyLevelCapture.clear();
         }
 

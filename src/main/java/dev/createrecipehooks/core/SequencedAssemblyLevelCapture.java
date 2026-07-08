@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
  * {@code SequencedAssemblyRecipe.getRecipe*()} into the later
  * {@code advance()} call within the same server tick thread.
  *
- * <p>Must live outside {@code dev.createrecipehooks.mixin.*} — that package is
+ * <p>Must live outside {@code dev.createrecipehooks.mixin.*}, that package is
  * owned by the Mixin transformer and classes there cannot be referenced directly
  * from injected bytecode running inside target classes.
  */

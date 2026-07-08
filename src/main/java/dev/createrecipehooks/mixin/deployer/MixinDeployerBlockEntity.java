@@ -9,13 +9,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import java.util.UUID;
 
 /**
- * Exposes Create's built-in {@code protected UUID owner} (set by
- * {@code DeployerBlock.setPlacedBy}) through {@link ICrhOwnable}.
- *
- * <p>No NBT injection needed — Create already persists {@code owner} under key
- * {@code "Owner"}. No CrhOwnerContext injection needed — the UUID is read directly
- * from {@code deployer instanceof ICrhOwnable} inside
- * {@link MixinBeltDeployerCallbacks#crh$onDeployerActivated}.
+ * Exposes Create's built-in Deployer owner field through {@link ICrhOwnable}.
+ * Create persists it itself, so no NBT handling is needed here.
  */
 @Mixin(value = DeployerBlockEntity.class, remap = false)
 public abstract class MixinDeployerBlockEntity implements ICrhOwnable {

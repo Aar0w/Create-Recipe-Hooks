@@ -13,11 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.UUID;
 
 /**
- * Persists the UUID of the player who placed this Basin into the BlockEntity's NBT,
- * allowing CRH to attribute recipe completions to a specific player.
- *
- * <p>NBT key: {@code crh:owner} (stored as two longs via {@link CompoundTag#putUUID}).
- * Null if the basin was placed by a piston, command, or other non-player entity.
+ * Owner tracking for the Basin: persists the placing player's UUID in the block
+ * entity NBT so BASIN events can be attributed.
  */
 @Mixin(value = BasinBlockEntity.class, remap = false)
 public abstract class MixinBasinBlockEntity implements ICrhOwnable {

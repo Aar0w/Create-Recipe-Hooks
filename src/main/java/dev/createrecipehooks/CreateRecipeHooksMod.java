@@ -16,26 +16,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Forge 47 (MC 1.20.1) mod entry point for Create Recipe Hooks.
- *
- * <p>Note: on Forge 47, {@code @Mod} constructors do NOT receive {@code IEventBus modBus}
- * as a parameter — that parameter style was introduced in later Forge/NeoForge versions.
- * Use {@code FMLJavaModLoadingContext.get().getModEventBus()} for the mod event bus.
- *
- * <h3>Addon integration via IMC</h3>
- * <p>Addon mods that wish to register an {@link IHookProvider} without a hard
- * dependency call order requirement can send an IMC message during
- * {@code FMLInterModComms.sendTo} / {@code InterModEnqueueEvent}:
- * <pre>{@code
- * // In your addon's InterModEnqueueEvent handler:
- * InterModComms.sendTo(
- *     "createrecipehooks",
- *     "register_hook_provider",
- *     MyAddonHookProvider::new   // Supplier<IHookProvider>
- * );
- * }</pre>
- * <p>The library processes these messages in {@code InterModProcessEvent} and registers
- * each provider via {@link CreateRecipeHooks#registerProvider(IHookProvider)}.
+ * Mod entry point (Forge). Wires the dispatcher into the Forge event bus and lets addons
+ * register {@link IHookProvider} instances via IMC message {@code register_hook_provider}.
  */
 @Mod(CreateRecipeHooksMod.MOD_ID)
 public class CreateRecipeHooksMod {
@@ -49,9 +31,6 @@ public class CreateRecipeHooksMod {
 
     public CreateRecipeHooksMod() {
         // Server-side only: clients without this mod can join servers that have it.
-        // All events and mixin logic are server-gated; nothing is synced to the client.
-        // Explicit constructor form — the IGNORE_SERVER_VERSION shortcut constant is not
-        // available in the Forge version this project compiles against.
         ModLoadingContext.get().registerExtensionPoint(
             IExtensionPoint.DisplayTest.class,
             () -> new IExtensionPoint.DisplayTest(
@@ -60,11 +39,8 @@ public class CreateRecipeHooksMod {
             )
         );
 
-        // Bridge from our dispatcher → Forge EVENT_BUS
         NeoForgeAdapter.register();
 
-        // Subscribe to IMC so optional addons (CEI, S&R, PowerGrid, etc.) can
-        // register IHookProvider instances without requiring a hard call-order dependency.
         FMLJavaModLoadingContext.get().getModEventBus()
                 .addListener(this::processIMC);
 
@@ -74,14 +50,12 @@ public class CreateRecipeHooksMod {
             LOGGER.info("[CreateRecipeHooks] Debug logging enabled (-Dcrh.debug=true)");
         }
 
-        LOGGER.info("[CreateRecipeHooks] v{} loaded — {} listener(s) registered",
+        LOGGER.info("[CreateRecipeHooks] v{} loaded, {} listener(s) registered",
             CreateRecipeHooks.getVersion(),
             dev.createrecipehooks.core.RecipeEventDispatcher.listenerCount());
     }
 
     private void processIMC(InterModProcessEvent event) {
-        // InterModProcessEvent carries no data — messages are retrieved via
-        // InterModComms.getMessages(modId): Stream<IMCMessage>  [verified: fmlcore-47.x]
         InterModComms.getMessages(MOD_ID)
             .filter(msg -> IMC_REGISTER_PROVIDER.equals(msg.method()))
             .forEach(msg -> {

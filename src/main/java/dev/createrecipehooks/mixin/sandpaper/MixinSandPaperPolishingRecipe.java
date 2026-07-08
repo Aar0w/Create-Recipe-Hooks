@@ -18,40 +18,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import java.util.List;
 
 /**
- * Hook #15b — SandPaper direct player use.
- * Risk: MODERATE
- *
- * <h3>Injection strategy</h3>
- * {@code @WrapOperation} on the single {@code SandPaperPolishingRecipe.applyPolish()} call
- * inside {@code SandPaperItem.m_5922_()} (finishUsingItem; SRG name confirmed from production jar).
- *
- * <h3>Why WrapOperation instead of @Inject @RETURN</h3>
- * {@code finishUsingItem()} has three RETURN instructions:
- * <ol>
- *   <li>Instruction 17  — non-Player entity early return: only {@code stack} (ordinal=0) is
- *       an ItemStack in scope; no {@code toPolish} or {@code polished} yet.</li>
- *   <li>Instruction 91  — client-side early return: both locals exist but at shifted ordinals.</li>
- *   <li>Instruction 151 — final return: merged frame (tag-absent ⊕ server path) loses
- *       {@code toPolish}/{@code polished} from the merged frame.</li>
- * </ol>
- * A {@code @Local(ordinal=1) ItemStack} at {@code @RETURN} fails at transformation time on
- * RETURN 17 and 151 (only one ItemStack in frame), causing {@code SandPaperItem} to fail
- * class-loading and Create to enter ERROR state.
- *
- * <h3>WrapOperation approach</h3>
- * {@code applyPolish(Level, Vec3, ItemStack toPolish, ItemStack sandPaper)} is called
- * exactly once (instruction 54) and only when a Player uses the item. The handler receives
- * {@code toPolish} and {@code polished} (the return value) directly — no {@code @Local}
- * for ItemStacks needed. {@code entityLiving} comes from outer-method args via
- * {@code @Local(argsOnly=true)}, which reads the method descriptor and is always safe.
- *
- * <h3>Available data</h3>
- * <ul>
- *   <li>{@code level}    — from applyPolish arg 0</li>
- *   <li>{@code toPolish} — from applyPolish arg 2 (item being polished)</li>
- *   <li>{@code polished} — return value of applyPolish</li>
- *   <li>{@code entityLiving} — outer method arg 2 (always a Player at this call site)</li>
- * </ul>
+ * Fires the SAND_PAPER event when a player finishes polishing an item by hand.
+ * This is the only source where {@code getPlayer()} is non-null. The SRG method name
+ * in the target is intentional: production Forge keeps SRG method names at mixin time.
  */
 @Mixin(value = SandPaperItem.class, remap = false)
 public abstract class MixinSandPaperPolishingRecipe {

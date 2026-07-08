@@ -18,7 +18,7 @@ import java.util.Map;
  * Mechanical Saw cuts a lone block that is not part of a tree.
  *
  * <p>Posted on <strong>{@code MinecraftForge.EVENT_BUS}</strong>, same as
- * {@link CreateRecipeFinishedEvent}. Not cancellable — the block is already gone.
+ * {@link CreateRecipeFinishedEvent}. Not cancellable, the block is already gone.
  * Fired on the server tick thread only.
  *
  * <p>Tree felling is a separate event: {@link CreateTreeCutEvent}. The two never fire

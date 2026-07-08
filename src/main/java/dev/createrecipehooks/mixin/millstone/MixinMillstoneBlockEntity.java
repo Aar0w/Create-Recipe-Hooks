@@ -21,6 +21,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Fires the MILLSTONE event when a milling recipe completes and tracks the
+ * Millstone's owner for attribution.
+ */
 @Mixin(value = MillstoneBlockEntity.class, remap = false)
 public abstract class MixinMillstoneBlockEntity implements ICrhOwnable {
 

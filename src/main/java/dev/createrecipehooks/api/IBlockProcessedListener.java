@@ -6,8 +6,8 @@ package dev.createrecipehooks.api;
  *
  * <p>The same functional interface is used for both event channels:
  * <ul>
- *   <li>{@link CreateRecipeHooks#registerBlockProcessed} — one call per processed block;</li>
- *   <li>{@link CreateRecipeHooks#registerTreeCut} — one call per felled tree
+ *   <li>{@link CreateRecipeHooks#registerBlockProcessed}, one call per processed block;</li>
+ *   <li>{@link CreateRecipeHooks#registerTreeCut}, one call per felled tree
  *       (context carries {@link BlockProcessedContext#getLogCount()}).</li>
  * </ul>
  *

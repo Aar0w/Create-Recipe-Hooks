@@ -27,24 +27,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Hook #5 — CrushingWheel.
- * Risk: STABLE
- *
- * <h3>1.20.1 Migration note</h3>
- * {@code RecipeHolder} does NOT exist in MC 1.20.1.
- * {@code CrushingWheelControllerBlockEntity.findRecipe()} returns
- * {@code Optional<ProcessingRecipe<RecipeWrapper>>} directly.
- * Recipe id accessed via {@code recipe.getId()} which exists in 1.20.1 ✅
- *
- * <h3>Thrower UUID</h3>
- * <p>The {@code CrushingWheelControllerBlockEntity} is created programmatically when
- * two wheels align — it is never placed directly by a player. Therefore "owner" UUID
- * cannot be obtained from {@code BlockEvent.EntityPlaceEvent}.
- *
- * <p>Instead, the UUID of whoever threw/dropped the {@code ItemEntity} is captured in
- * {@code intakeItem(ItemEntity)} before the entity is discarded, and attached to the
- * event as {@code createrecipehooks:owner_uuid}. This is best-effort: items inserted
- * by automation (hoppers, other machines) will produce an event without UUID.
+ * Fires the CRUSHING_WHEEL event when the wheels finish a recipe. Attribution:
+ * whoever threw the item in, with a fallback to the owner of an adjacent wheel
+ * for belt and hopper fed input.
  */
 @Mixin(value = CrushingWheelControllerBlockEntity.class, remap = false)
 public abstract class MixinCrushingWheelController {
@@ -84,8 +69,7 @@ public abstract class MixinCrushingWheelController {
             .recipeId(r.getId())
             .itemOutputs(outputs);
 
-        // Attribution priority: item thrower first (manual toss), then the owner of an
-        // adjacent crushing wheel (belt/hopper-fed automation).
+        // Attribution priority: item thrower first, then the owner of an adjacent wheel.
         UUID attributed = crh$throwerUUID != null
                 ? crh$throwerUUID
                 : crh$findWheelOwner(level, self.getBlockPos());

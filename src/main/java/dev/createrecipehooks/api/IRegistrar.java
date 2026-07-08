@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * API-safe registration surface passed to {@link IHookProvider#register}.
  *
- * <p>Hides the internal {@code RecipeHookRegistry} from addon authors — they interact
+ * <p>Hides the internal {@code RecipeHookRegistry} from addon authors, they interact
  * only with types declared in this {@code api} package.
  *
  * <p>The object passed at runtime IS the {@code RecipeHookRegistry} singleton,

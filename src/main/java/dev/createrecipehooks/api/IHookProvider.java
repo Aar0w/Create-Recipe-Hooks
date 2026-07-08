@@ -7,7 +7,7 @@ package dev.createrecipehooks.api;
  * <p>Implement this interface and register via
  * {@link CreateRecipeHooks#registerProvider(IHookProvider)} during mod initialisation.
  *
- * <p>Example — a hypothetical addon adding a new recipe machine:
+ * <p>Example, a hypothetical addon adding a new recipe machine:
  * <pre>{@code
  * public class MyAddonHooks implements IHookProvider {
  *
@@ -42,7 +42,7 @@ public interface IHookProvider {
      * Called once during library initialisation to allow this provider to register
      * listeners via the given {@link IRegistrar}.
      *
-     * <p>All types in this method signature belong to the {@code api} package —
+     * <p>All types in this method signature belong to the {@code api} package -
      * no internal library classes are exposed here.
      *
      * @param registrar the registration surface; never {@code null}

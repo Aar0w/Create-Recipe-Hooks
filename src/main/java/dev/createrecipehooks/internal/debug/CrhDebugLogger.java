@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * <p>Line format:
  * <pre>yyyy-MM-dd HH:mm:ss | SOURCE | recipeId | player | NxItem, ...</pre>
  *
- * <p><strong>Internal — not part of the public API. May change without notice.</strong>
+ * <p><strong>Internal, not part of the public API. May change without notice.</strong>
  */
 public final class CrhDebugLogger {
 

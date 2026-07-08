@@ -18,23 +18,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.UUID;
 
 /**
- * Dispatches {@code DEPLOYER_BELT} events directly from the static
- * {@code BeltDeployerCallbacks.activate()} which is the single convergence point
- * for both world-mode and belt-mode Deployer recipe application.
- *
- * <p>World-mode: {@code DeployerBlockEntity.activate()} calls this method at bytecode
- * offset 125. Belt-mode: {@code BeltDeployerCallbacks.whenItemHeld()} calls this method
- * once the deployment timer expires.
- *
- * <p>{@code activate()} calls {@code RecipeApplier.applyRecipeOn()} at bytecode offset 14
- * (confirmed via javap). The UUID is read directly from the {@code deployer} parameter
- * (cast to {@link ICrhOwnable}, wired by {@link MixinDeployerBlockEntity}) to avoid
- * dependency on {@link dev.createrecipehooks.internal.CrhOwnerContext} and the ordering
- * issues that come with multiple RETURN injections.
- *
- * <p>{@code MixinRecipeApplier.resolveSource()} returns {@code null} for
- * {@code DEPLOYING} and {@code ITEM_APPLICATION} recipe types so the event is only
- * dispatched once — here, not in the shared RecipeApplier hook.
+ * Fires the DEPLOYER_BELT event when a Deployer applies a recipe, attributed to the
+ * Deployer's owner. Deployer recipe types are excluded from the shared RecipeApplier
+ * hook so the event fires exactly once.
  */
 @Mixin(value = BeltDeployerCallbacks.class, remap = false)
 public abstract class MixinBeltDeployerCallbacks {

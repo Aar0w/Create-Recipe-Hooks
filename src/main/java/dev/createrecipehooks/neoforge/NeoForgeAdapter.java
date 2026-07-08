@@ -25,13 +25,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 /**
- * Forge adapter — bridges {@link RecipeEventDispatcher} to the Forge global EVENT_BUS.
- *
- * <p>This is the <strong>only</strong> file that imports {@code net.minecraftforge.*}.
- * All Mixin classes are platform-agnostic.
- *
- * <p>For the 1.20.1 / Forge 47 target, uses {@code MinecraftForge.EVENT_BUS}
- * (not {@code NeoForge.EVENT_BUS} which belongs to NeoForge 20.4+ / 1.21).
+ * Forge adapter: bridges the dispatcher to the Forge event bus and records machine
+ * owners on block placement.
  */
 public final class NeoForgeAdapter implements IRecipeFinishedListener {
 
@@ -77,21 +72,14 @@ public final class NeoForgeAdapter implements IRecipeFinishedListener {
         if (block instanceof HarvesterBlock)        return true;
         // Deployer: Create's DeployerBlock.setPlacedBy() already sets the built-in owner field.
 
-        // CEI Printer — soft dependency, matched by registry name
+        // CEI Printer, soft dependency, matched by registry name
         ResourceLocation key = ForgeRegistries.BLOCKS.getKey(block);
         return key != null
             && "create_enchantment_industry".equals(key.getNamespace())
             && "printer".equals(key.getPath());
     }
 
-    /**
-     * Wires this adapter into the dispatch chain.
-     *
-     * <p>Calls {@link RecipeEventDispatcher#registerListener} directly rather than
-     * going through {@link dev.createrecipehooks.api.CreateRecipeHooks#register} because
-     * this adapter IS part of the library infrastructure, not an addon. Using the public
-     * API here would be circular — the adapter and the public API are at the same layer.
-     */
+    /** Wires this adapter into the dispatch chain. Called once from the mod constructor. */
     public static void register() {
         RecipeEventDispatcher.registerListener(INSTANCE);
         RecipeEventDispatcher.registerBlockProcessedListener(

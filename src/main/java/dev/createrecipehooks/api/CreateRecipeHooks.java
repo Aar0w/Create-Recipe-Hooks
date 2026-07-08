@@ -1,7 +1,7 @@
 package dev.createrecipehooks.api;
 
-import dev.createrecipehooks.core.RecipeEventDispatcher;   // internal — intentional facade coupling
-import dev.createrecipehooks.core.RecipeHookRegistry;       // internal — intentional facade coupling
+import dev.createrecipehooks.core.RecipeEventDispatcher;   // internal, intentional facade coupling
+import dev.createrecipehooks.core.RecipeHookRegistry;       // internal, intentional facade coupling
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -37,7 +37,7 @@ public final class CreateRecipeHooks {
      * <p>Listeners are called in registration order. If a listener throws an exception
      * it is caught and logged; subsequent listeners still execute.
      *
-     * <p>Registrations are permanent for the lifetime of the JVM — there is no
+     * <p>Registrations are permanent for the lifetime of the JVM, there is no
      * {@code unregister} method. Register once in your mod initializer.
      *
      * @param listener the listener to add; must not be {@code null}

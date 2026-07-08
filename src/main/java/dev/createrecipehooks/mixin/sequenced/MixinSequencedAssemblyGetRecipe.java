@@ -16,22 +16,12 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
- * Captures {@link Level} from all SequencedAssemblyRecipe.getRecipe/getRecipes overloads.
- *
- * <h3>1.20.1 Create 6.0.8 actual signatures (from javap)</h3>
- * <pre>
- * getRecipe(Level, C extends Container, RecipeType, Class)           → Optional  [overload 1]
- * getRecipe(Level, C extends Container, RecipeType, Class, Predicate) → Optional [overload 2]
- * getRecipe(Level, ItemStack, RecipeType, Class)                      → Optional  [overload 3]
- * getRecipes(Level, ItemStack, RecipeType, Class)                     → Stream    [no Predicate!]
- * </pre>
- * Overloads 1 and 2 use Container (erased from generic C extends Container) in bytecode.
- * getRecipes has no Predicate parameter and returns Stream, not List.
+ * Captures the {@link Level} from every {@code SequencedAssemblyRecipe.getRecipe} overload
+ * so {@link MixinSequencedAssemblyRecipe} can build the event context (the recipe class
+ * itself has no Level reference at completion time).
  */
 @Mixin(value = SequencedAssemblyRecipe.class, remap = false)
 public abstract class MixinSequencedAssemblyGetRecipe {
-
-    // ── Overload #1: getRecipe(Level, Container, RecipeType, Class) ────────
 
     @Inject(
         method = "getRecipe(Lnet/minecraft/world/level/Level;" +
@@ -50,8 +40,6 @@ public abstract class MixinSequencedAssemblyGetRecipe {
     ) {
         SequencedAssemblyLevelCapture.set(world);
     }
-
-    // ── Overload #2: getRecipe(Level, Container, RecipeType, Class, Predicate) ─
 
     @Inject(
         method = "getRecipe(Lnet/minecraft/world/level/Level;" +
@@ -73,8 +61,6 @@ public abstract class MixinSequencedAssemblyGetRecipe {
         SequencedAssemblyLevelCapture.set(world);
     }
 
-    // ── Overload #3: getRecipe(Level, ItemStack, RecipeType, Class) ───────────
-
     @Inject(
         method = "getRecipe(Lnet/minecraft/world/level/Level;" +
                  "Lnet/minecraft/world/item/ItemStack;" +
@@ -92,9 +78,6 @@ public abstract class MixinSequencedAssemblyGetRecipe {
     ) {
         SequencedAssemblyLevelCapture.set(level);
     }
-
-    // ── getRecipes(Level, ItemStack, RecipeType, Class) → Stream ─────────────
-    // No Predicate parameter; returns Stream (not List) in Create 6.0.8.
 
     @Inject(
         method = "getRecipes(Lnet/minecraft/world/level/Level;" +

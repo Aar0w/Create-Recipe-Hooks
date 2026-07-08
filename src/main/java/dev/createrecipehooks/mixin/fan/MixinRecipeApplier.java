@@ -20,18 +20,10 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Hook #2/#3 — RecipeApplier general hook.
- * Risk: STABLE
- *
- * <h3>1.20.1 Migration</h3>
- * <ul>
- *   <li>Removed {@code import com.simibubi.create.AllDataComponents} —
- *       DataComponents API does not exist in MC 1.20.1.</li>
- *   <li>Sequenced Assembly deduplication: In 1.20.1, transitional items are identified
- *       by their NBT tag. Create 0.5.1.f stores the sequenced assembly state as
- *       {@code CompoundTag} under key {@code "SequencedAssembly"} in the ItemStack's tag.
- *       Check: {@code out.hasTag() && out.getOrCreateTag().contains("SequencedAssembly")}.</li>
- * </ul>
+ * Shared hook on {@code RecipeApplier.applyRecipeOn}: fires FAN_* events (all four fan
+ * processing types), MECHANICAL_PRESS and SAND_PAPER via the belt path, and UNKNOWN for
+ * unrecognized addon recipes. Deployer types are excluded here and handled by
+ * {@link dev.createrecipehooks.mixin.deployer.MixinBeltDeployerCallbacks}.
  */
 @Mixin(value = RecipeApplier.class, remap = false)
 public abstract class MixinRecipeApplier {
@@ -54,17 +46,14 @@ public abstract class MixinRecipeApplier {
         if (outputs == null || outputs.isEmpty()) return;
         if (level == null || level.isClientSide()) return;
 
-        // Deduplication: skip Sequenced Assembly transitional items.
-        // In NeoForge 1.20.1, SA state is stored as NBT under key "SequencedAssembly".
+        // Skip Sequenced Assembly transitional items; the final step fires its own event.
         for (ItemStack out : outputs) {
             if (!out.isEmpty()
                     && out.hasTag() && out.getOrCreateTag().contains("SequencedAssembly")) {
-                return; // intermediate SA step — skip
+                return;
             }
         }
 
-        // DEPLOYING / ITEM_APPLICATION types are handled by MixinBeltDeployerCallbacks
-        // to avoid a duplicate event — skip them here.
         RecipeSource source = resolveSource(recipe);
         if (source == null) return;
 
@@ -94,8 +83,7 @@ public abstract class MixinRecipeApplier {
         if (type == AllRecipeTypes.PRESSING.getType())            return RecipeSource.MECHANICAL_PRESS;
         if (type == AllRecipeTypes.SANDPAPER_POLISHING.getType()) return RecipeSource.SAND_PAPER;
 
-        // DEPLOYING / ITEM_APPLICATION are dispatched by MixinBeltDeployerCallbacks.
-        // Return null so this hook does not fire a second, duplicate event.
+        // Deployer types are dispatched by MixinBeltDeployerCallbacks; null avoids a duplicate.
         if (type == AllRecipeTypes.DEPLOYING.getType()
             || type == AllRecipeTypes.ITEM_APPLICATION.getType()) return null;
 

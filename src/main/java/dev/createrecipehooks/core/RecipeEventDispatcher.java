@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Central dispatcher — the <strong>only</strong> entry point from which all Mixin
+ * Central dispatcher, the <strong>only</strong> entry point from which all Mixin
  * hooks post their events.
  *
  * <h3>Architecture position</h3>
@@ -34,7 +34,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Exceptions thrown by individual listeners are caught, logged, and do not prevent
  * subsequent listeners from executing.
  *
- * <p><strong>Internal API</strong> — Mixin classes call this directly.
+ * <p><strong>Internal API</strong>, Mixin classes call this directly.
  * Addon authors should use {@link dev.createrecipehooks.api.CreateRecipeHooks}.
  */
 public final class RecipeEventDispatcher {
@@ -105,7 +105,7 @@ public final class RecipeEventDispatcher {
      */
     public static void dispatch(RecipeFinishedContext ctx) {
         if (ctx == null) {
-            LOGGER.warn("dispatch() called with null context — ignoring");
+            LOGGER.warn("dispatch() called with null context, ignoring");
             return;
         }
 
@@ -149,7 +149,7 @@ public final class RecipeEventDispatcher {
                                              List<IBlockProcessedListener> listeners,
                                              String channel) {
         if (ctx == null) {
-            LOGGER.warn("{} dispatch called with null context — ignoring", channel);
+            LOGGER.warn("{} dispatch called with null context, ignoring", channel);
             return;
         }
 

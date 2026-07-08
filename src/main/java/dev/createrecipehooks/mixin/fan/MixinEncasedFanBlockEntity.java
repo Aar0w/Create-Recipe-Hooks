@@ -13,14 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.UUID;
 
 /**
- * Adds {@link ICrhOwnable} UUID tracking to {@link EncasedFanBlockEntity}.
- *
- * <p>The UUID is set by {@link dev.createrecipehooks.neoforge.NeoForgeAdapter#onOwnableBlockPlaced}
- * when the player places an Encased Fan. At recipe-application time,
- * {@link MixinAirCurrent} reads {@code crh$getOwnerUUID()} and sets
- * {@link dev.createrecipehooks.internal.CrhOwnerContext} before
- * {@code FanProcessing.applyProcessing()} is invoked so that
- * {@link MixinRecipeApplier} can attach the UUID to the event metadata.
+ * Owner tracking for the Encased Fan: persists the placing player's UUID so
+ * {@link MixinAirCurrent} can attribute FAN_* events.
  */
 @Mixin(value = EncasedFanBlockEntity.class, remap = false)
 public abstract class MixinEncasedFanBlockEntity implements ICrhOwnable {
