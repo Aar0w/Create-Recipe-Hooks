@@ -17,18 +17,10 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Snapshot of data available at the moment a Create recipe completed.
- *
- * <p>{@link #getSource()}, {@link #getLevel()} and {@link #getTimestamp()} are always
- * present; all other fields are optional, check for {@code null} or empty list before use.
- * The object is structurally immutable, but {@link #getLevel()}, {@link #getPlayer()} and
- * the {@code ItemStack}s inside the lists are live Minecraft objects: do not mutate them
- * and read them only on the server tick thread. Immutable fields ({@code source},
- * {@code timestamp}, {@code blockPos}, {@code recipeId}, {@code fluidOutputs}) are safe
- * to hand off to worker threads.
- *
- * @see RecipeSource
- * @see IRecipeFinishedListener
+ * Snapshot of data available at the moment a Create recipe completed. Source, level and
+ * timestamp are always present; everything else is optional, check for null or empty
+ * list before use. Read live objects (level, player, item stacks) only on the server
+ * tick thread and treat the stacks as read-only.
  */
 public final class RecipeFinishedContext {
 
@@ -77,24 +69,21 @@ public final class RecipeFinishedContext {
 
     /**
      * The machine or mechanic that produced this recipe completion.
-     * Never {@code null}.
+     * Never null.
      */
     @NotNull
     public RecipeSource getSource() { return source; }
 
     /**
-     * The server-side {@link Level} where the recipe completed.
-     * Never {@code null}. Events are never dispatched on the client.
+     * The server-side Level where the recipe completed.
+     * Never null. Events are never dispatched on the client.
      */
     @NotNull
     public Level getLevel() { return level; }
 
     /**
-     * {@code System.nanoTime()} captured at the moment the {@link Builder} was created
-     * inside the completing mixin, immediately before
-     * {@link dev.createrecipehooks.core.RecipeEventDispatcher#dispatch} is called.
-     * Useful for performance profiling or ordering events.
-     * Not a wall-clock time, subtract two timestamps to get nanosecond durations.
+     * System.nanoTime() at the moment of the event. Not a wall-clock time,
+     * subtract two timestamps to get nanosecond durations.
      */
     public long getTimestamp() { return timestamp; }
 
@@ -103,111 +92,57 @@ public final class RecipeFinishedContext {
     // ------------------------------------------------------------------ //
 
     /**
-     * Block position of the machine that completed the recipe.
-     *
-     * <p>{@code null} for:
-     * <ul>
-     *   <li>Fan processing (ItemEntity in the world, not a stationary block)</li>
-     *   <li>Belt Deployer (position comes from the transported item, not captured)</li>
-     *   <li>Sand Paper (held item, no block position)</li>
-     * </ul>
+     * Block position of the machine. Null for Fan processing (item in the world),
+     * belt Deployer and Sand Paper.
      */
     @Nullable
     public BlockPos getBlockPos() { return blockPos; }
 
     /**
-     * Registry ID of the completed recipe, e.g. {@code create:mixing/iron_nugget}.
-     *
-     * <p>{@code null} for:
-     * <ul>
-     *   <li>Item Drain when emptying via fluid capability with no matching
-     *       {@code EmptyingRecipe}, the fluid is extracted directly from the container's
-     *       fluid handler, so no recipe object or ID exists.</li>
-     * </ul>
-     * <p>All other v1 sources have a recipe object and therefore a non-null recipe ID.
-     *
-     * <p>See also: {@link #getRecipe()} for the one-way relationship between
-     * recipe id and recipe object.
+     * Registry ID of the completed recipe, e.g. create:mixing/iron_nugget.
+     * Null when no recipe object was involved (capability emptying on the Item Drain).
      */
     @Nullable
     public ResourceLocation getRecipeId() { return recipeId; }
 
     /**
-     * The recipe object. Usually the same type as the machine processes.
-     *
-     * <h4>Relationship with {@link #getRecipeId()}</h4>
-     * <p>These two fields are <em>not</em> symmetric:
-     * <ul>
-     *   <li>If {@code getRecipe() != null} then {@code getRecipeId() != null} (always).</li>
-     *   <li>If {@code getRecipeId() != null} then {@code getRecipe()} may still be
-     *       {@code null}, for example, Mechanical Crafter vanilla crafting stores only
-     *       the recipe id (captured from {@code RecipeManager}), not the recipe object.</li>
-     * </ul>
-     * <p>When both are needed, check {@code getRecipe()} first; fall back to
-     * {@code getRecipeId()} for id-only lookup.
+     * The recipe object. May be null even when getRecipeId() is present, for example
+     * vanilla crafting in the Mechanical Crafter stores only the id.
      */
     @Nullable
     public Recipe<?> getRecipe() { return recipe; }
 
     /**
-     * The player involved in this recipe completion.
-     *
-     * <h4>v1 availability</h4>
-     * <ul>
-     *   <li>{@link RecipeSource#SAND_PAPER} (hand use by player only), the real
-     *       {@code ServerPlayer}. Non-null.</li>
-     *   <li>All other sources, including {@link RecipeSource#DEPLOYER_BELT}, {@code null}.
-     *       The Deployer's {@code DeployerFakePlayer} is <em>not</em> captured in v1.</li>
-     * </ul>
-     *
-     * <p>Always check for {@code null} before using this field, even for sources that
-     * may add player support in future versions.
+     * The player involved in this completion. Non-null only for SAND_PAPER hand use;
+     * for every other source use the owner UUID from the metadata instead.
      */
     @Nullable
     public ServerPlayer getPlayer() { return player; }
 
     /**
-     * Unmodifiable list of item stacks produced by this recipe.
-     * Never {@code null}; empty when no item outputs exist or they could not be captured.
-     * Fluid-only recipes (e.g. some Basin recipes) may return an empty list here.
-     *
-     * <p><strong>Do not mutate the {@code ItemStack} objects in this list.</strong>
-     * They are shallow snapshots, the list structure is immutable, but the stacks
-     * themselves are mutable Minecraft objects. Treat them as read-only.
-     * Call {@code stack.copy()} if you need to store or modify a stack.
+     * Item stacks produced by this recipe. Never null, may be empty.
+     * Treat the stacks as read-only, call stack.copy() before storing or changing one.
      */
     @NotNull
     public List<ItemStack> getItemOutputs() { return itemOutputs; }
 
     /**
-     * Unmodifiable list of item stacks consumed as inputs.
-     * Never {@code null}; empty when inputs could not be captured before consumption (most machines).
-     * Available for: Fan processing (input ItemEntity), Sequenced Assembly (input stack).
-     *
-     * <p><strong>Do not mutate the {@code ItemStack} objects in this list.</strong>
-     * Same shallow-immutability caveat as {@link #getItemOutputs()}.
+     * Item stacks consumed as inputs (available for Fan, Sequenced Assembly, Spout,
+     * Item Drain). Never null, may be empty. Treat the stacks as read-only.
      */
     @NotNull
     public List<ItemStack> getItemInputs() { return itemInputs; }
 
     /**
-     * Unmodifiable list of fluid outputs produced by this recipe.
-     *
-     * <p>Empty for most machines. Non-empty for:
-     * <ul>
-     *   <li>Basin (mixing recipes with fluid outputs)</li>
-     *   <li>Item Drain (emptying fluid containers)</li>
-     * </ul>
-     *
-     * <p>Each entry is a {@link FluidAmount}, a platform-independent snapshot
-     * of fluid type and quantity in milli-buckets. No dependency on Forge's FluidStack.
+     * Fluid outputs in milli-buckets (Basin, Item Drain). Never null, empty for
+     * most machines.
      */
     @NotNull
     public List<FluidAmount> getFluidOutputs() { return fluidOutputs; }
 
     /**
      * Unmodifiable map of addon-defined metadata.
-     * Keys are namespaced strings (e.g. {@code "create_enchantment_industry:experience_amount"}).
+     * Keys are namespaced strings (e.g. "create_enchantment_industry:experience_amount").
      * Empty for all built-in sources.
      */
     @NotNull
@@ -218,9 +153,9 @@ public final class RecipeFinishedContext {
     // ------------------------------------------------------------------ //
 
     /**
-     * Entry point for constructing a {@link RecipeFinishedContext}.
+     * Entry point for constructing a RecipeFinishedContext.
      *
-     * <p>Only {@code source} and {@code level} are required; all other fields are optional.
+     * Only source and level are required; all other fields are optional.
      */
     public static Builder of(@NotNull RecipeSource source, @NotNull Level level) {
         Objects.requireNonNull(source, "source must not be null");
@@ -229,9 +164,9 @@ public final class RecipeFinishedContext {
     }
 
     /**
-     * Builder for {@link RecipeFinishedContext}.
+     * Builder for RecipeFinishedContext.
      *
-     * <p>Not thread-safe during construction; call {@link #build()} on the same thread
+     * Not thread-safe during construction; call build() on the same thread
      * that holds all the data, then pass the immutable context to other threads.
      */
     public static final class Builder {
@@ -263,8 +198,8 @@ public final class RecipeFinishedContext {
         }
 
         /**
-         * Sets both {@code recipeId} and {@code recipe} from a {@link Recipe} object.
-         * Extracts the id via {@code recipe.getId()}.
+         * Sets both recipeId and recipe from a Recipe object.
+         * Extracts the id via recipe.getId().
          */
         public Builder recipe(@NotNull Recipe<?> r) {
             this.recipe   = r;
@@ -300,8 +235,8 @@ public final class RecipeFinishedContext {
         }
 
         /**
-         * Sets fluid outputs. Convert platform {@code FluidStack} objects to
-         * {@link FluidAmount} in the mixin/adapter layer before calling this.
+         * Sets fluid outputs. Convert platform FluidStack objects to
+         * FluidAmount in the mixin/adapter layer before calling this.
          *
          * @param fluids list of fluid amounts; defensively copied
          */
@@ -312,7 +247,7 @@ public final class RecipeFinishedContext {
 
         /**
          * Adds a single addon-defined metadata entry.
-         * Key should be namespaced: {@code "modid:key"}.
+         * Key should be namespaced: "modid:key".
          */
         public Builder meta(@NotNull String key, @NotNull Object value) {
             if (this.metadata.isEmpty()) {
@@ -322,7 +257,7 @@ public final class RecipeFinishedContext {
             return this;
         }
 
-        /** Builds the immutable {@link RecipeFinishedContext}. */
+        /** Builds the immutable RecipeFinishedContext. */
         @NotNull
         public RecipeFinishedContext build() {
             return new RecipeFinishedContext(this);

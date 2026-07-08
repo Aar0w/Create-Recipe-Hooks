@@ -15,8 +15,8 @@ import java.util.UUID;
 
 /**
  * Owner tracking for the Mechanical Crafter. The output crafter's UUID is handed to
- * {@link MixinRecipeGridHandler} through {@link CrhOwnerContext} around the
- * {@code tryToApplyRecipe} call in {@code tick()}.
+ * MixinRecipeGridHandler through CrhOwnerContext around the
+ * tryToApplyRecipe call in tick().
  */
 @Mixin(value = MechanicalCrafterBlockEntity.class, remap = false)
 public abstract class MixinMechanicalCrafterBlockEntity implements ICrhOwnable {

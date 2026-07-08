@@ -10,26 +10,16 @@ import dev.latvian.mods.kubejs.event.Extra;
 import dev.latvian.mods.kubejs.script.ScriptType;
 
 /**
- * KubeJS integration, registers the {@code CRHEvents} group.
- *
- * <p>Loaded exclusively by KubeJS via {@code kubejs.plugins.txt}; when KubeJS is not
- * installed this class is never classloaded, so the KubeJS dependency stays fully
- * optional. Do not reference this class from anywhere else in the mod.
- *
- * <h3>Script API</h3>
- * <pre>{@code
- * CRHEvents.recipeFinished(event => { ... })                      // all sources
- * CRHEvents.recipeFinished('MECHANICAL_PRESS', event => { ... })  // one source
- * CRHEvents.blockProcessed('MECHANICAL_DRILL', event => { ... })
- * CRHEvents.treeCut('MECHANICAL_SAW', event => { ... })
- * }</pre>
+ * KubeJS integration, registers the CRHEvents group (recipeFinished, blockProcessed,
+ * treeCut). Loaded only by KubeJS via kubejs.plugins.txt, so the dependency stays
+ * optional; never reference this class from anywhere else in the mod.
  */
 public class CrhKubeJSPlugin extends KubeJSPlugin {
 
     public static final EventGroup GROUP = EventGroup.of("CRHEvents");
 
     /**
-     * {@code Extra.STRING} (not REQUIRES_STRING), the source filter is optional:
+     * Extra.STRING (not REQUIRES_STRING), the source filter is optional:
      * scripts may subscribe with or without it.
      */
     public static final EventHandler RECIPE_FINISHED = GROUP

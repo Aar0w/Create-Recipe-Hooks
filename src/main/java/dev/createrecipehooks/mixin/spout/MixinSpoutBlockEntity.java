@@ -18,8 +18,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.UUID;
 
 /**
- * Owner tracking for the Spout. The UUID is handed to {@link MixinFillingBySpout}
- * through {@link CrhOwnerContext} for the duration of {@code whenItemHeld()}.
+ * Owner tracking for the Spout. The UUID is handed to MixinFillingBySpout
+ * through CrhOwnerContext for the duration of whenItemHeld().
  */
 @Mixin(value = SpoutBlockEntity.class, remap = false)
 public abstract class MixinSpoutBlockEntity implements ICrhOwnable {

@@ -6,7 +6,7 @@ import dev.createrecipehooks.api.RecipeFinishedContext;
 
 /**
  * Debug listener that logs every recipe completion when the mod is launched with
- * {@code -Dcrh.debug=true}. Internal, not part of the public API.
+ * -Dcrh.debug=true. Internal, not part of the public API.
  */
 public final class DebugListener implements IRecipeFinishedListener {
 

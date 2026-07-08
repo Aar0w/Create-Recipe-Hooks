@@ -19,16 +19,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 
 /**
- * Dedicated file logger for CRH debug mode.
- *
- * <p>Activated by {@code -Dcrh.debug=true}. Writes one line per recipe event to
- * {@code logs/crh-events.log} using a separate Log4j2 logger so output never
- * mingles with the main game log.
- *
- * <p>Line format:
- * <pre>yyyy-MM-dd HH:mm:ss | SOURCE | recipeId | player | NxItem, ...</pre>
- *
- * <p><strong>Internal, not part of the public API. May change without notice.</strong>
+ * File logger for debug mode (-Dcrh.debug=true): writes one line per event to
+ * logs/crh-events.log. Internal, not part of the public API.
  */
 public final class CrhDebugLogger {
 
@@ -77,7 +69,7 @@ public final class CrhDebugLogger {
 
     /**
      * Writes one log line for the given context.
-     * No-op if {@link #init()} was not called or failed.
+     * No-op if init() was not called or failed.
      */
     public static void log(RecipeFinishedContext ctx) {
         Logger logger = fileLogger;

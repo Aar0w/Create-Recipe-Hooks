@@ -3,17 +3,8 @@ package dev.createrecipehooks.integration.kubejs;
 import dev.createrecipehooks.api.BlockProcessedContext;
 
 /**
- * Script-facing wrapper for tree-felling events (Mechanical Saw). One event per felled
- * tree; the mutually exclusive lone-block case fires {@code blockProcessed} instead.
- *
- * <pre>{@code
- * CRHEvents.treeCut('MECHANICAL_SAW', event => {
- *     const player = event.getOwner();
- *     if (!player) return;
- *     const logs = event.getLogCount(); // -1 for Dynamic Trees mod trees (size unknown)
- *     // sum logs in player NBT for a "cut 500 logs" quest, etc.
- * })
- * }</pre>
+ * Script-facing wrapper for CRHEvents.treeCut: one event per tree felled by a Saw,
+ * with log and leaf counts. Lone blocks fire blockProcessed instead.
  */
 public class TreeCutEventJS extends BlockProcessedEventJS {
 
@@ -23,14 +14,14 @@ public class TreeCutEventJS extends BlockProcessedEventJS {
 
     /**
      * Number of log blocks in the felled tree (column height for bamboo/cactus/sugar
-     * cane/kelp/chorus). {@code -1} when the tree was felled through the Dynamic Trees
+     * cane/kelp/chorus). -1 when the tree was felled through the Dynamic Trees
      * mod integration and the size is unknown.
      */
     public int getLogCount() {
         return ctx.getLogCount();
     }
 
-    /** Number of leaf blocks in the felled tree. Same {@code -1} rule as {@link #getLogCount()}. */
+    /** Number of leaf blocks in the felled tree. Same -1 rule as getLogCount(). */
     public int getLeafCount() {
         return ctx.getLeafCount();
     }

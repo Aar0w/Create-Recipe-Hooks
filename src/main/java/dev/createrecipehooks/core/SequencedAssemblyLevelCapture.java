@@ -4,11 +4,11 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * ThreadLocal storage that carries the {@link Level} from
- * {@code SequencedAssemblyRecipe.getRecipe*()} into the later
- * {@code advance()} call within the same server tick thread.
+ * ThreadLocal storage that carries the Level from
+ * SequencedAssemblyRecipe.getRecipe*() into the later
+ * advance() call within the same server tick thread.
  *
- * <p>Must live outside {@code dev.createrecipehooks.mixin.*}, that package is
+ * Must live outside dev.createrecipehooks.mixin.*, that package is
  * owned by the Mixin transformer and classes there cannot be referenced directly
  * from injected bytecode running inside target classes.
  */

@@ -13,15 +13,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 
 /**
- * Forge event fired whenever a Mechanical Saw (stationary or contraption actor) fells
- * a whole tree. One event per tree, with the log and leaf counts of the felled tree.
- *
- * <p>Deliberately <em>not</em> a subclass of {@link CreateBlockProcessedEvent}: the two
- * are mutually exclusive (a cut is either a tree or a lone block, never both) and must
- * not trigger each other's bus listeners.
- *
- * <p>Posted on <strong>{@code MinecraftForge.EVENT_BUS}</strong>. Not cancellable.
- * Fired on the server tick thread only.
+ * Forge event fired when a Mechanical Saw fells a whole tree: one event per tree, with
+ * log and leaf counts. Lone blocks fire CreateBlockProcessedEvent instead, never both.
+ * Posted on the Forge event bus, server side only, not cancellable.
  */
 public final class CreateTreeCutEvent extends Event {
 

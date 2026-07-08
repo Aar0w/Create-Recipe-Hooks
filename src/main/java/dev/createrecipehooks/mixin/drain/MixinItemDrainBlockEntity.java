@@ -16,8 +16,8 @@ import java.util.UUID;
 
 /**
  * Owner tracking for the Item Drain. The UUID is handed to
- * {@link MixinGenericItemEmptying} through {@link CrhOwnerContext} for the duration
- * of {@code continueProcessing()}.
+ * MixinGenericItemEmptying through CrhOwnerContext for the duration
+ * of continueProcessing().
  */
 @Mixin(value = ItemDrainBlockEntity.class, remap = false)
 public abstract class MixinItemDrainBlockEntity implements ICrhOwnable {

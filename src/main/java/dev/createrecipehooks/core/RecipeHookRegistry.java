@@ -9,19 +9,9 @@ import org.apache.logging.log4j.Logger;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Registry that manages {@link IHookProvider} registrations.
- *
- * <p>Providers are keyed by their {@link IHookProvider#getId() id}. A provider
- * with a duplicate id is rejected with a warning, this prevents accidental
- * double-registration from class-loading order issues.
- *
- * <p>When a provider is accepted its {@link IHookProvider#register(IRegistrar)}
- * method is called immediately, passing {@code this} as the {@link IRegistrar}.
- *
- * <h3>Singleton</h3>
- * One shared instance {@link #INSTANCE} is used throughout the library. Addon code
- * should always go through {@link dev.createrecipehooks.api.CreateRecipeHooks#registerProvider}
- * rather than accessing this class directly.
+ * Registry for IHookProvider registrations, keyed by provider id (duplicates are
+ * rejected with a warning). Internal, addon authors should go through
+ * CreateRecipeHooks.registerProvider.
  */
 public final class RecipeHookRegistry implements IRegistrar {
 
@@ -37,11 +27,11 @@ public final class RecipeHookRegistry implements IRegistrar {
     // ------------------------------------------------------------------ //
 
     /**
-     * Registers an {@link IHookProvider} and immediately calls
-     * {@link IHookProvider#register(IRegistrar)} on it, passing {@code this} as the registrar.
+     * Registers an IHookProvider and immediately calls
+     * IHookProvider#register(IRegistrar) on it, passing this as the registrar.
      *
      * @param provider the provider to register
-     * @throws IllegalArgumentException if {@code provider.getId()} is null or empty
+     * @throws IllegalArgumentException if provider.getId() is null or empty
      */
     public void addProvider(IHookProvider provider) {
         if (provider == null) throw new NullPointerException("provider must not be null");
@@ -77,10 +67,10 @@ public final class RecipeHookRegistry implements IRegistrar {
     // ------------------------------------------------------------------ //
 
     /**
-     * Implements {@link IRegistrar}. Providers call this inside
-     * {@link IHookProvider#register(IRegistrar)} to attach listeners.
+     * Implements IRegistrar. Providers call this inside
+     * IHookProvider#register(IRegistrar) to attach listeners.
      *
-     * <p>Equivalent to {@link dev.createrecipehooks.api.CreateRecipeHooks#register}.
+     * Equivalent to dev.createrecipehooks.api.CreateRecipeHooks#register.
      */
     @Override
     public void addListener(IRecipeFinishedListener listener) {

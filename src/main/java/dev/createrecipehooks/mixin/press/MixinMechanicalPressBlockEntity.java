@@ -16,7 +16,7 @@ import java.util.UUID;
 
 /**
  * Owner tracking for the Mechanical Press. The UUID is carried through
- * {@link CrhOwnerContext} around both processing paths (belt and world) so the shared
+ * CrhOwnerContext around both processing paths (belt and world) so the shared
  * RecipeApplier hook can attribute MECHANICAL_PRESS events.
  */
 @Mixin(value = MechanicalPressBlockEntity.class, remap = false)

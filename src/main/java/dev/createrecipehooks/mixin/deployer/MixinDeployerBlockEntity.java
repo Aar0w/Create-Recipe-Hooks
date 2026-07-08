@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import java.util.UUID;
 
 /**
- * Exposes Create's built-in Deployer owner field through {@link ICrhOwnable}.
+ * Exposes Create's built-in Deployer owner field through ICrhOwnable.
  * Create persists it itself, so no NBT handling is needed here.
  */
 @Mixin(value = DeployerBlockEntity.class, remap = false)

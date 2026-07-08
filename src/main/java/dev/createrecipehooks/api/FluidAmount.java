@@ -6,23 +6,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 /**
- * Platform-independent snapshot of one fluid output produced by a Create recipe.
+ * Loader-independent snapshot of one fluid output, so the common API has no dependency
+ * on a platform FluidStack class.
  *
- * <p>Avoids a compile-time dependency on Forge/NeoForge's {@code FluidStack} in this
- * common API module. The amount is in milli-buckets (1 bucket = 1000 mB).
- *
- * <h3>Conversion from FluidStack (Forge 1.20.1)</h3>
- * <pre>{@code
- * import net.minecraft.core.registries.BuiltInRegistries;
- * FluidStack fs = ...;
- * FluidAmount fa = new FluidAmount(
- *     BuiltInRegistries.FLUID.getKey(fs.getFluid()),
- *     fs.getAmount()
- * );
- * }</pre>
- *
- * @param fluid  Registry key of the fluid, e.g. {@code minecraft:water}
- * @param amount Amount in milli-buckets; always &gt;= 0
+ * @param fluid  Registry key of the fluid, e.g. minecraft:water
+ * @param amount Amount in milli-buckets (1 bucket = 1000 mB); always >= 0
  */
 public record FluidAmount(@NotNull ResourceLocation fluid, int amount) {
 

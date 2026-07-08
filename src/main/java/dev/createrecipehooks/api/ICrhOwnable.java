@@ -5,15 +5,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.UUID;
 
 /**
- * Implemented (via Mixin) on any Create BlockEntity that CRH tracks ownership for.
- *
- * <p>Addon mods can cast a {@code BasinBlockEntity} to this interface to read the UUID
- * of the player who placed the machine:
- * <pre>{@code
- * if (basin instanceof ICrhOwnable ownable) {
- *     UUID owner = ownable.crh$getOwnerUUID(); // null if placed by piston/command
- * }
- * }</pre>
+ * Implemented (via mixin) on every Create block entity that CRH tracks ownership for.
+ * Cast the block entity to this interface to read the UUID of the player who placed
+ * the machine; null when it was placed by a piston, command or other non-player.
  */
 public interface ICrhOwnable {
     @Nullable UUID crh$getOwnerUUID();

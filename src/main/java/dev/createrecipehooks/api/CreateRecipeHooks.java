@@ -5,27 +5,9 @@ import dev.createrecipehooks.core.RecipeHookRegistry;       // internal, intenti
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Primary entry point for the Create Recipe Hooks library.
- *
- * <h3>Listening to recipe completions</h3>
- * <pre>{@code
- * // In your mod initializer:
- * CreateRecipeHooks.register(ctx -> {
- *     if (ctx.getSource() == RecipeSource.BASIN) {
- *         LOGGER.info("Basin recipe {} completed at {}",
- *             ctx.getRecipeId(), ctx.getBlockPos());
- *     }
- * });
- * }</pre>
- *
- * <h3>Registering an addon hook provider</h3>
- * <pre>{@code
- * CreateRecipeHooks.registerProvider(new MyAddonHooks());
- * }</pre>
- *
- * <h3>Thread safety</h3>
- * {@link #register} and {@link #registerProvider} are thread-safe and may be called
- * concurrently. Listeners are invoked on the server tick thread.
+ * Primary entry point of the library. Register listeners once in your mod initializer,
+ * for example CreateRecipeHooks.register(ctx -> ...). Registration methods are
+ * thread-safe; listeners are invoked on the server tick thread.
  */
 public final class CreateRecipeHooks {
 
@@ -34,13 +16,13 @@ public final class CreateRecipeHooks {
     /**
      * Registers a listener that will be notified whenever any Create recipe completes.
      *
-     * <p>Listeners are called in registration order. If a listener throws an exception
+     * Listeners are called in registration order. If a listener throws an exception
      * it is caught and logged; subsequent listeners still execute.
      *
-     * <p>Registrations are permanent for the lifetime of the JVM, there is no
-     * {@code unregister} method. Register once in your mod initializer.
+     * Registrations are permanent for the lifetime of the JVM, there is no
+     * unregister method. Register once in your mod initializer.
      *
-     * @param listener the listener to add; must not be {@code null}
+     * @param listener the listener to add; must not be null
      */
     public static void register(@NotNull IRecipeFinishedListener listener) {
         RecipeEventDispatcher.registerListener(listener);
@@ -51,9 +33,9 @@ public final class CreateRecipeHooks {
      * Mechanical Drill (stationary or contraption), per crop cut by a Mechanical Harvester,
      * and per lone block cut by a Mechanical Saw that is not part of a tree.
      *
-     * <p>Same threading and lifetime rules as {@link #register}.
+     * Same threading and lifetime rules as register.
      *
-     * @param listener the listener to add; must not be {@code null}
+     * @param listener the listener to add; must not be null
      */
     public static void registerBlockProcessed(@NotNull IBlockProcessedListener listener) {
         RecipeEventDispatcher.registerBlockProcessedListener(listener);
@@ -62,25 +44,25 @@ public final class CreateRecipeHooks {
     /**
      * Registers a listener for tree-felling events: one call per tree felled by a
      * Mechanical Saw (stationary or contraption). The context carries
-     * {@link BlockProcessedContext#getLogCount()} and
-     * {@link BlockProcessedContext#getLeafCount()}.
+     * BlockProcessedContext#getLogCount() and
+     * BlockProcessedContext#getLeafCount().
      *
-     * <p>Same threading and lifetime rules as {@link #register}.
+     * Same threading and lifetime rules as register.
      *
-     * @param listener the listener to add; must not be {@code null}
+     * @param listener the listener to add; must not be null
      */
     public static void registerTreeCut(@NotNull IBlockProcessedListener listener) {
         RecipeEventDispatcher.registerTreeCutListener(listener);
     }
 
     /**
-     * Registers an {@link IHookProvider}, typically used by addon authors to declare
+     * Registers an IHookProvider, typically used by addon authors to declare
      * that their mod provides additional hook sources.
      *
-     * <p>The provider's {@link IHookProvider#register(IRegistrar)} method is called
+     * The provider's IHookProvider#register(IRegistrar) method is called
      * immediately on the current thread, allowing it to attach listeners.
      *
-     * @param provider the provider to register; must not be {@code null}
+     * @param provider the provider to register; must not be null
      * @throws IllegalArgumentException if a provider with the same id is already registered
      */
     public static void registerProvider(@NotNull IHookProvider provider) {
@@ -88,7 +70,7 @@ public final class CreateRecipeHooks {
     }
 
     /**
-     * Returns the version string of this library, e.g. {@code "1.0.0+create-6.0.0"}.
+     * Returns the version string of this library, e.g. "1.0.0+create-6.0.0".
      * Useful for compatibility checks in providers.
      */
     @NotNull

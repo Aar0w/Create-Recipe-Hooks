@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * Fires the SAND_PAPER event when a player finishes polishing an item by hand.
- * This is the only source where {@code getPlayer()} is non-null. The SRG method name
+ * This is the only source where getPlayer() is non-null. The SRG method name
  * in the target is intentional: production Forge keeps SRG method names at mixin time.
  */
 @Mixin(value = SandPaperItem.class, remap = false)

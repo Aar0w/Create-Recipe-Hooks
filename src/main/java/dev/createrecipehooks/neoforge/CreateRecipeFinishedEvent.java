@@ -19,9 +19,9 @@ import java.util.Map;
 /**
  * Forge event fired whenever a Create (or addon) recipe completes on the server.
  *
- * <p>Posted on {@code MinecraftForge.EVENT_BUS} (the global game bus, not the mod bus).
+ * Posted on MinecraftForge.EVENT_BUS (the global game bus, not the mod bus).
  * Not cancellable; fired on the server tick thread only. Mods that prefer no Forge bus
- * dependency can use {@link dev.createrecipehooks.api.CreateRecipeHooks#register} instead.
+ * dependency can use dev.createrecipehooks.api.CreateRecipeHooks#register instead.
  */
 public final class CreateRecipeFinishedEvent extends Event {
 

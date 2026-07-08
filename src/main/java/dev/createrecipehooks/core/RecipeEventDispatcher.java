@@ -11,31 +11,9 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Central dispatcher, the <strong>only</strong> entry point from which all Mixin
- * hooks post their events.
- *
- * <h3>Architecture position</h3>
- * <pre>
- * Mixin (Layer 3) → RecipeEventDispatcher.dispatch(ctx) → IRecipeFinishedListener (Layer 1)
- *                                                        → NeoForgeAdapter → MinecraftForge.EVENT_BUS
- * </pre>
- *
- * <h3>Thread safety</h3>
- * Listener list is backed by a {@link CopyOnWriteArrayList}, making reads during dispatch
- * allocation-free and writes (registrations) safe from any thread.
- *
- * <h3>Dispatch is synchronous and blocking</h3>
- * {@link #dispatch} runs all listeners sequentially on the calling thread (server tick thread).
- * Listener execution time adds directly to the machine's processing time per tick.
- * Listeners are expected to return in microseconds, not milliseconds.
- * See {@link dev.createrecipehooks.api.IRecipeFinishedListener} for the async hand-off pattern.
- *
- * <h3>Error isolation</h3>
- * Exceptions thrown by individual listeners are caught, logged, and do not prevent
- * subsequent listeners from executing.
- *
- * <p><strong>Internal API</strong>, Mixin classes call this directly.
- * Addon authors should use {@link dev.createrecipehooks.api.CreateRecipeHooks}.
+ * Central dispatcher: all mixin hooks post their events through this class. Dispatch is
+ * synchronous on the server tick thread; listener exceptions are caught and logged.
+ * Internal, addon authors should use CreateRecipeHooks instead.
  */
 public final class RecipeEventDispatcher {
 
@@ -63,7 +41,7 @@ public final class RecipeEventDispatcher {
 
     /**
      * Adds a listener. Thread-safe. Called by
-     * {@link dev.createrecipehooks.api.CreateRecipeHooks#register}.
+     * dev.createrecipehooks.api.CreateRecipeHooks#register.
      *
      * @param listener must not be null
      */
@@ -74,7 +52,7 @@ public final class RecipeEventDispatcher {
 
     /**
      * Adds a blockProcessed listener. Thread-safe. Called by
-     * {@link dev.createrecipehooks.api.CreateRecipeHooks#registerBlockProcessed}.
+     * dev.createrecipehooks.api.CreateRecipeHooks#registerBlockProcessed.
      */
     public static void registerBlockProcessedListener(IBlockProcessedListener listener) {
         if (listener == null) throw new NullPointerException("listener must not be null");
@@ -83,7 +61,7 @@ public final class RecipeEventDispatcher {
 
     /**
      * Adds a treeCut listener. Thread-safe. Called by
-     * {@link dev.createrecipehooks.api.CreateRecipeHooks#registerTreeCut}.
+     * dev.createrecipehooks.api.CreateRecipeHooks#registerTreeCut.
      */
     public static void registerTreeCutListener(IBlockProcessedListener listener) {
         if (listener == null) throw new NullPointerException("listener must not be null");
@@ -97,7 +75,7 @@ public final class RecipeEventDispatcher {
     /**
      * Dispatches a completed recipe event to all registered listeners.
      *
-     * <p>Called exclusively by Mixin hook classes in Layer 3.
+     * Called exclusively by Mixin hook classes in Layer 3.
      * Always invoked on the server tick thread. Client-side calls are filtered
      * in the individual Mixin before reaching here.
      *

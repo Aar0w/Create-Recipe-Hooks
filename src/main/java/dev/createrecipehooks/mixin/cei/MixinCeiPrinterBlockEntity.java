@@ -25,7 +25,7 @@ import java.util.UUID;
 
 /**
  * Fires the CEI_PRINTER event when the Create Enchantment Industry Printer commits a
- * copy operation, and tracks the Printer's owner. Soft dependency: {@code @Pseudo}
+ * copy operation, and tracks the Printer's owner. Soft dependency: @Pseudo
  * skips this mixin silently when CEI is not installed.
  */
 @Pseudo

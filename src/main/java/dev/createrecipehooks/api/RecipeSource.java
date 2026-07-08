@@ -3,7 +3,7 @@ package dev.createrecipehooks.api;
 /**
  * Identifies which Create machine or mechanic produced an event.
  *
- * <p>This enum is part of the stable public API: entries are never removed between minor
+ * This enum is part of the stable public API: entries are never removed between minor
  * versions, new ones may be added. Some entries are reserved and fire no events yet;
  * they are marked as such below.
  */
@@ -11,7 +11,7 @@ public enum RecipeSource {
 
     /**
      * Basin recipes: Mixer, Compactor, pressing on a Basin, and any addon machine that
-     * goes through {@code BasinRecipe.apply()} (for example the CEI Infuser).
+     * goes through BasinRecipe.apply() (for example the CEI Infuser).
      */
     BASIN,
 
@@ -36,24 +36,24 @@ public enum RecipeSource {
 
     /**
      * Deployer applying a recipe (deploying and item-application recipe types).
-     * {@code getPlayer()} is null; attribution comes from the Deployer's owner metadata.
+     * getPlayer() is null; attribution comes from the Deployer's owner metadata.
      */
     DEPLOYER_BELT,
 
     /**
      * Reserved, no events fired: all Deployer processing currently arrives as
-     * {@link #DEPLOYER_BELT}.
+     * DEPLOYER_BELT.
      */
     DEPLOYER_DIRECT,
 
     /**
      * Reserved, no events fired: manual item application currently arrives as
-     * {@link #DEPLOYER_BELT}.
+     * DEPLOYER_BELT.
      */
     MANUAL_APPLICATION,
 
     /**
-     * Sand Paper polishing. On manual use {@code getPlayer()} returns the real player;
+     * Sand Paper polishing. On manual use getPlayer() returns the real player;
      * on belt use (via Deployer) it is null.
      */
     SAND_PAPER,
@@ -72,7 +72,7 @@ public enum RecipeSource {
 
     /**
      * Fan with lava or blaze burner. Covers both vanilla smelting and blasting recipe
-     * types; use {@link RecipeFinishedContext#getRecipe()} to distinguish them.
+     * types; use RecipeFinishedContext#getRecipe() to distinguish them.
      */
     FAN_BLASTING,
 
@@ -80,13 +80,13 @@ public enum RecipeSource {
     FAN_SMOKING,
 
     /**
-     * Spout filling an item. {@code getRecipeId()} is null when filling goes through the
+     * Spout filling an item. getRecipeId() is null when filling goes through the
      * fluid capability instead of a FillingRecipe (buckets and similar containers).
      */
     SPOUT_FILLING,
 
     /**
-     * Item Drain emptying a container. {@code getRecipeId()} is null for capability
+     * Item Drain emptying a container. getRecipeId() is null for capability
      * emptying (buckets) and potions.
      */
     ITEM_DRAIN_EMPTYING,
@@ -96,14 +96,14 @@ public enum RecipeSource {
 
     /**
      * Printer from Create Enchantment Industry, fired only when CEI is installed.
-     * {@code getRecipeId()} is null: the Printer does not use a vanilla recipe object.
+     * getRecipeId() is null: the Printer does not use a vanilla recipe object.
      */
     CEI_PRINTER,
 
-    /** Reserved, no events fired: CEI Infuser events arrive as {@link #BASIN}. */
+    /** Reserved, no events fired: CEI Infuser events arrive as BASIN. */
     CEI_INFUSER,
 
-    /** Reserved, no events fired: CEI Salvaging events arrive as {@code FAN_*}. */
+    /** Reserved, no events fired: CEI Salvaging events arrive as FAN_*. */
     CEI_SALVAGING,
 
     /** Reserved, no events fired: no hook exists for PowerGrid yet. */
@@ -111,7 +111,7 @@ public enum RecipeSource {
 
     /**
      * Mechanical Drill, blockProcessed events only: one event per broken block, both
-     * stationary and on contraptions ({@link BlockProcessedContext#isContraption()}).
+     * stationary and on contraptions (BlockProcessedContext#isContraption()).
      */
     MECHANICAL_DRILL,
 
@@ -121,6 +121,6 @@ public enum RecipeSource {
      */
     MECHANICAL_HARVESTER,
 
-    /** Catch-all for unrecognized addon recipes going through {@code RecipeApplier}. */
+    /** Catch-all for unrecognized addon recipes going through RecipeApplier. */
     UNKNOWN
 }

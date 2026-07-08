@@ -13,18 +13,8 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Script-facing wrapper around {@link BlockProcessedContext} for KubeJS.
- *
- * <pre>{@code
- * CRHEvents.blockProcessed('MECHANICAL_DRILL', event => {
- *     if (event.getBlockId() !== 'minecraft:stone') return;
- *     const player = event.getOwner();          // ServerPlayer or null
- *     if (!player) return;
- *     // count in player NBT, award quest progress, etc.
- * })
- * }</pre>
- *
- * <p>Not cancellable, the block is already gone when this fires.
+ * Script-facing wrapper for CRHEvents.blockProcessed. Not cancellable, the block is
+ * already gone when this fires.
  */
 public class BlockProcessedEventJS extends EventJS {
 
@@ -36,12 +26,12 @@ public class BlockProcessedEventJS extends EventJS {
         this.ctx = ctx;
     }
 
-    /** Source machine name: {@code "MECHANICAL_DRILL"}, {@code "MECHANICAL_HARVESTER"}, {@code "MECHANICAL_SAW"}. */
+    /** Source machine name: "MECHANICAL_DRILL", "MECHANICAL_HARVESTER", "MECHANICAL_SAW". */
     public String getSource() {
         return ctx.getSource().name();
     }
 
-    /** Processed block id as string, e.g. {@code "minecraft:stone"}. Never null. */
+    /** Processed block id as string, e.g. "minecraft:stone". Never null. */
     public String getBlockId() {
         return ctx.getBlockId().toString();
     }

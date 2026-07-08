@@ -41,9 +41,9 @@ public final class NeoForgeAdapter implements IRecipeFinishedListener {
 
     /**
      * Records the placing player's UUID in the BlockEntity's NBT for all CRH-tracked
-     * machines that implement {@link ICrhOwnable}.
+     * machines that implement ICrhOwnable.
      *
-     * <p>CEI Printer is matched by registry name (no hard compile-time CEI dependency).
+     * CEI Printer is matched by registry name (no hard compile-time CEI dependency).
      */
     @SubscribeEvent
     public static void onOwnableBlockPlaced(BlockEvent.EntityPlaceEvent event) {

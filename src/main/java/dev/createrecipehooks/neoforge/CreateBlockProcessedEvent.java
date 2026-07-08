@@ -13,16 +13,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 
 /**
- * Forge event fired whenever a Create machine processes a world block on the server:
- * a Mechanical Drill breaks a block, a Mechanical Harvester cuts a crop, or a
- * Mechanical Saw cuts a lone block that is not part of a tree.
- *
- * <p>Posted on <strong>{@code MinecraftForge.EVENT_BUS}</strong>, same as
- * {@link CreateRecipeFinishedEvent}. Not cancellable, the block is already gone.
- * Fired on the server tick thread only.
- *
- * <p>Tree felling is a separate event: {@link CreateTreeCutEvent}. The two never fire
- * for the same cut.
+ * Forge event fired when a Drill breaks a block, a Harvester cuts a plant, or a Saw
+ * cuts a lone block that is not part of a tree. Tree felling fires CreateTreeCutEvent
+ * instead, never both. Posted on the Forge event bus, server side only, not cancellable.
  */
 public final class CreateBlockProcessedEvent extends Event {
 

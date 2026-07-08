@@ -8,10 +8,10 @@ import java.util.UUID;
 /**
  * Reads the CRH owner UUID out of a contraption actor's serialized block-entity NBT.
  *
- * <p>When a contraption assembles, Create serializes every block entity via
- * {@code saveWithFullMetadata()} into {@code MovementContext.blockEntityData}. Machines
- * whose block entities implement {@code ICrhOwnable} write the placing player's UUID
- * under the {@code crh:owner} key, so the attribution travels with the contraption
+ * When a contraption assembles, Create serializes every block entity via
+ * saveWithFullMetadata() into MovementContext.blockEntityData. Machines
+ * whose block entities implement ICrhOwnable write the placing player's UUID
+ * under the crh:owner key, so the attribution travels with the contraption
  * without any world lookups.
  */
 public final class ContraptionOwner {
@@ -20,9 +20,9 @@ public final class ContraptionOwner {
     public static final String NBT_KEY = "crh:owner";
 
     /**
-     * @param blockEntityData {@code MovementContext.blockEntityData}; may be {@code null}
+     * @param blockEntityData MovementContext.blockEntityData; may be null
      *                        for blocks without a block entity
-     * @return the owner UUID, or {@code null} when absent
+     * @return the owner UUID, or null when absent
      */
     @Nullable
     public static UUID fromBlockEntityData(@Nullable CompoundTag blockEntityData) {

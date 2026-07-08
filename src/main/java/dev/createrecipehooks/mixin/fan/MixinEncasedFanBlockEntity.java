@@ -14,7 +14,7 @@ import java.util.UUID;
 
 /**
  * Owner tracking for the Encased Fan: persists the placing player's UUID so
- * {@link MixinAirCurrent} can attribute FAN_* events.
+ * MixinAirCurrent can attribute FAN_* events.
  */
 @Mixin(value = EncasedFanBlockEntity.class, remap = false)
 public abstract class MixinEncasedFanBlockEntity implements ICrhOwnable {

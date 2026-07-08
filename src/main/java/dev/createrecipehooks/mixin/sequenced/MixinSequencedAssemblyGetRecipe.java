@@ -16,8 +16,8 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
- * Captures the {@link Level} from every {@code SequencedAssemblyRecipe.getRecipe} overload
- * so {@link MixinSequencedAssemblyRecipe} can build the event context (the recipe class
+ * Captures the Level from every SequencedAssemblyRecipe.getRecipe overload
+ * so MixinSequencedAssemblyRecipe can build the event context (the recipe class
  * itself has no Level reference at completion time).
  */
 @Mixin(value = SequencedAssemblyRecipe.class, remap = false)

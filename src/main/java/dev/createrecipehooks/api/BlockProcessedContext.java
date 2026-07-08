@@ -14,36 +14,10 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Snapshot of data available at the moment a Create machine processed a world block
- * (broke, harvested, or felled it). This is the block-world counterpart of
- * {@link RecipeFinishedContext}: no recipe is involved, so there is no recipe id,
- * no item outputs, and no fluid outputs.
- *
- * <h3>Which events use this context</h3>
- * <ul>
- *   <li><strong>blockProcessed</strong>, one event per processed block.
- *       Sources: {@link RecipeSource#MECHANICAL_DRILL},
- *       {@link RecipeSource#MECHANICAL_HARVESTER},
- *       {@link RecipeSource#MECHANICAL_SAW} (a sawed block that is not part of a tree).</li>
- *   <li><strong>treeCut</strong>, one event per felled tree.
- *       Source: {@link RecipeSource#MECHANICAL_SAW} only.
- *       {@link #getLogCount()} / {@link #getLeafCount()} carry the tree size.</li>
- * </ul>
- *
- * <h3>Field availability</h3>
- * <ul>
- *   <li>{@link #getSource()}, {@link #getLevel()}, {@link #getBlockState()},
- *       {@link #getTimestamp()}, always present, never {@code null}.</li>
- *   <li>{@link #getBlockPos()}, position of the processed block (for treeCut: the block
- *       the saw physically touched). May be {@code null} only if a hook could not capture it.</li>
- *   <li>{@link #getLogCount()} / {@link #getLeafCount()}, {@code >= 0} for treeCut events
- *       from Create's own TreeCutter; {@code -1} for blockProcessed events and for trees
- *       felled through the Dynamic Trees mod integration (size unknown).</li>
- * </ul>
- *
- * <p>Thread-safety follows the same contract as {@link RecipeFinishedContext}:
- * {@code source}, {@code timestamp}, {@code blockPos}, {@code blockId} are safe on any
- * thread; {@code level} and {@code blockState} only on the server tick thread.
+ * Snapshot of data for a Create machine processing a world block: the Drill breaking
+ * a block, the Harvester cutting a plant, the Saw cutting a lone block (blockProcessed
+ * events) or felling a whole tree (treeCut events). No recipe is involved, so unlike
+ * RecipeFinishedContext there is no recipe id and no item outputs.
  */
 public final class BlockProcessedContext {
 
@@ -71,25 +45,25 @@ public final class BlockProcessedContext {
         this.metadata    = Collections.unmodifiableMap(new HashMap<>(b.metadata));
     }
 
-    /** The machine that processed the block. Never {@code null}. */
+    /** The machine that processed the block. Never null. */
     @NotNull
     public RecipeSource getSource() { return source; }
 
-    /** The server-side {@link Level}. Never {@code null}; events never fire client-side. */
+    /** The server-side Level. Never null; events never fire client-side. */
     @NotNull
     public Level getLevel() { return level; }
 
     /**
      * State of the processed block, captured immediately before destruction.
      * For treeCut events this is the starting block (the log the saw touched).
-     * Never {@code null}.
+     * Never null.
      */
     @NotNull
     public BlockState getBlockState() { return blockState; }
 
     /**
-     * Registry id of the processed block, e.g. {@code minecraft:stone}.
-     * Derived from {@link #getBlockState()}; never {@code null}.
+     * Registry id of the processed block, e.g. minecraft:stone.
+     * Derived from getBlockState(); never null.
      */
     @NotNull
     public ResourceLocation getBlockId() {
@@ -97,22 +71,22 @@ public final class BlockProcessedContext {
     }
 
     /**
-     * {@code true} when the machine was operating as a contraption actor (moving on a
-     * piston/bearing/gantry/train assembly); {@code false} for stationary machines.
-     * Always {@code true} for {@link RecipeSource#MECHANICAL_HARVESTER}.
+     * true when the machine was operating as a contraption actor (moving on a
+     * piston/bearing/gantry/train assembly); false for stationary machines.
+     * Always true for RecipeSource#MECHANICAL_HARVESTER.
      */
     public boolean isContraption() { return contraption; }
 
     /**
      * Number of log blocks in the felled tree. Only meaningful for treeCut events:
-     * {@code >= 1} for trees found by Create's TreeCutter (includes vertical plants such
-     * as bamboo and cactus, where it is the column height), {@code -1} when the tree was
-     * felled through the Dynamic Trees integration (size unknown) and {@code -1} for all
+     * >= 1 for trees found by Create's TreeCutter (includes vertical plants such
+     * as bamboo and cactus, where it is the column height), -1 when the tree was
+     * felled through the Dynamic Trees integration (size unknown) and -1 for all
      * blockProcessed events.
      */
     public int getLogCount() { return logCount; }
 
-    /** Number of leaf blocks in the felled tree. Same availability rules as {@link #getLogCount()}. */
+    /** Number of leaf blocks in the felled tree. Same availability rules as getLogCount(). */
     public int getLeafCount() { return leafCount; }
 
     /** Position of the processed block. See class javadoc for availability. */
@@ -120,20 +94,20 @@ public final class BlockProcessedContext {
     public BlockPos getBlockPos() { return blockPos; }
 
     /**
-     * Unmodifiable metadata map. Uses the same keys as {@link RecipeFinishedContext},
-     * notably {@code createrecipehooks:owner_uuid}.
+     * Unmodifiable metadata map. Uses the same keys as RecipeFinishedContext,
+     * notably createrecipehooks:owner_uuid.
      */
     @NotNull
     public Map<String, Object> getMetadata() { return metadata; }
 
-    /** {@code System.nanoTime()} captured when the builder was created inside the hook. */
+    /** System.nanoTime() captured when the builder was created inside the hook. */
     public long getTimestamp() { return timestamp; }
 
     // ------------------------------------------------------------------ //
     //  Builder                                                             //
     // ------------------------------------------------------------------ //
 
-    /** Entry point. {@code source}, {@code level} and {@code blockState} are required. */
+    /** Entry point. source, level and blockState are required. */
     public static Builder of(@NotNull RecipeSource source, @NotNull Level level, @NotNull BlockState blockState) {
         Objects.requireNonNull(source,     "source must not be null");
         Objects.requireNonNull(level,      "level must not be null");
@@ -173,14 +147,14 @@ public final class BlockProcessedContext {
             return this;
         }
 
-        /** Sets tree size for treeCut events. Pass {@code -1, -1} when unknown (Dynamic Trees). */
+        /** Sets tree size for treeCut events. Pass -1, -1 when unknown (Dynamic Trees). */
         public Builder treeSize(int logCount, int leafCount) {
             this.logCount  = logCount;
             this.leafCount = leafCount;
             return this;
         }
 
-        /** Adds a metadata entry. Key should be namespaced: {@code "modid:key"}. */
+        /** Adds a metadata entry. Key should be namespaced: "modid:key". */
         public Builder meta(@NotNull String key, @NotNull Object value) {
             if (this.metadata.isEmpty()) {
                 this.metadata = new HashMap<>();
