@@ -19,79 +19,41 @@ public final class RecipeEventDispatcher {
 
     private static final Logger LOGGER = LogManager.getLogger("CreateRecipeHooks/Dispatcher");
 
-    /**
-     * Thread-safe list of registered listeners.
-     * CopyOnWriteArrayList is ideal here: registrations happen once at startup
-     * (cheap writes), dispatch happens every tick (cheap reads, no locking).
-     */
     private static final CopyOnWriteArrayList<IRecipeFinishedListener> LISTENERS =
             new CopyOnWriteArrayList<>();
 
-    /** Listeners for the blockProcessed channel (one event per processed block). */
     private static final CopyOnWriteArrayList<IBlockProcessedListener> BLOCK_LISTENERS =
             new CopyOnWriteArrayList<>();
 
-    /** Listeners for the treeCut channel (one event per felled tree). */
     private static final CopyOnWriteArrayList<IBlockProcessedListener> TREE_LISTENERS =
             new CopyOnWriteArrayList<>();
 
-    // ------------------------------------------------------------------ //
-    //  Registration (called by CreateRecipeHooks and RecipeHookRegistry)   //
-    // ------------------------------------------------------------------ //
-
-    /**
-     * Adds a listener. Thread-safe. Called by
-     * dev.createrecipehooks.api.CreateRecipeHooks#register.
-     *
-     * @param listener must not be null
-     */
+    /** Adds a recipeFinished listener, thread-safe. */
     public static void registerListener(IRecipeFinishedListener listener) {
         if (listener == null) throw new NullPointerException("listener must not be null");
         LISTENERS.add(listener);
     }
 
-    /**
-     * Adds a blockProcessed listener. Thread-safe. Called by
-     * dev.createrecipehooks.api.CreateRecipeHooks#registerBlockProcessed.
-     */
+    /** Adds a blockProcessed listener, thread-safe. */
     public static void registerBlockProcessedListener(IBlockProcessedListener listener) {
         if (listener == null) throw new NullPointerException("listener must not be null");
         BLOCK_LISTENERS.add(listener);
     }
 
-    /**
-     * Adds a treeCut listener. Thread-safe. Called by
-     * dev.createrecipehooks.api.CreateRecipeHooks#registerTreeCut.
-     */
+    /** Adds a treeCut listener, thread-safe. */
     public static void registerTreeCutListener(IBlockProcessedListener listener) {
         if (listener == null) throw new NullPointerException("listener must not be null");
         TREE_LISTENERS.add(listener);
     }
 
-    // ------------------------------------------------------------------ //
-    //  Dispatch (called by Mixin hooks only)                               //
-    // ------------------------------------------------------------------ //
-
-    /**
-     * Dispatches a completed recipe event to all registered listeners.
-     *
-     * Called exclusively by Mixin hook classes in Layer 3.
-     * Always invoked on the server tick thread. Client-side calls are filtered
-     * in the individual Mixin before reaching here.
-     *
-     * @param ctx the immutable context; must not be null
-     */
+    /** Fires a recipeFinished event. Called by the mixin hooks, server thread only. */
     public static void dispatch(RecipeFinishedContext ctx) {
         if (ctx == null) {
             LOGGER.warn("dispatch() called with null context, ignoring");
             return;
         }
 
-        // Snapshot the list reference; CopyOnWriteArrayList guarantees this is
-        // a consistent view even if listeners are registered concurrently.
-        List<IRecipeFinishedListener> snapshot = LISTENERS;
-
-        for (IRecipeFinishedListener listener : snapshot) {
+        for (IRecipeFinishedListener listener : LISTENERS) {
             try {
                 listener.onRecipeFinished(ctx);
             } catch (Exception e) {
@@ -107,18 +69,12 @@ public final class RecipeEventDispatcher {
         }
     }
 
-    /**
-     * Dispatches a blockProcessed event (Drill broke a block, Harvester cut a crop,
-     * Saw cut a lone block). Called exclusively by Mixin hooks, server tick thread only.
-     */
+    /** Fires a blockProcessed event. Called by the mixin hooks, server thread only. */
     public static void dispatchBlockProcessed(BlockProcessedContext ctx) {
         dispatchBlockContext(ctx, BLOCK_LISTENERS, "blockProcessed");
     }
 
-    /**
-     * Dispatches a treeCut event (Saw felled a tree). Called exclusively by Mixin hooks,
-     * server tick thread only.
-     */
+    /** Fires a treeCut event. Called by the mixin hooks, server thread only. */
     public static void dispatchTreeCut(BlockProcessedContext ctx) {
         dispatchBlockContext(ctx, TREE_LISTENERS, "treeCut");
     }
@@ -148,11 +104,7 @@ public final class RecipeEventDispatcher {
         }
     }
 
-    // ------------------------------------------------------------------ //
-    //  Diagnostics                                                         //
-    // ------------------------------------------------------------------ //
-
-    /** Returns the number of currently registered listeners. Useful for testing. */
+    /** Number of registered recipeFinished listeners, handy for logging. */
     public static int listenerCount() {
         return LISTENERS.size();
     }

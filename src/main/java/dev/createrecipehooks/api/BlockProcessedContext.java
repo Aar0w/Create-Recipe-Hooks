@@ -54,60 +54,42 @@ public final class BlockProcessedContext {
     public Level getLevel() { return level; }
 
     /**
-     * State of the processed block, captured immediately before destruction.
-     * For treeCut events this is the starting block (the log the saw touched).
-     * Never null.
+     * State of the processed block, captured right before it broke. For treeCut events
+     * this is the starting log the saw touched. Never null.
      */
     @NotNull
     public BlockState getBlockState() { return blockState; }
 
-    /**
-     * Registry id of the processed block, e.g. minecraft:stone.
-     * Derived from getBlockState(); never null.
-     */
+    /** Registry id of the processed block, e.g. minecraft:stone. Never null. */
     @NotNull
     public ResourceLocation getBlockId() {
         return BuiltInRegistries.BLOCK.getKey(blockState.getBlock());
     }
 
-    /**
-     * true when the machine was operating as a contraption actor (moving on a
-     * piston/bearing/gantry/train assembly); false for stationary machines.
-     * Always true for RecipeSource#MECHANICAL_HARVESTER.
-     */
+    /** True when the machine was moving as part of a contraption. */
     public boolean isContraption() { return contraption; }
 
     /**
-     * Number of log blocks in the felled tree. Only meaningful for treeCut events:
-     * >= 1 for trees found by Create's TreeCutter (includes vertical plants such
-     * as bamboo and cactus, where it is the column height), -1 when the tree was
-     * felled through the Dynamic Trees integration (size unknown) and -1 for all
-     * blockProcessed events.
+     * Logs in the felled tree, counting bamboo-like columns too. -1 when unknown
+     * (Dynamic Trees) or not a treeCut event.
      */
     public int getLogCount() { return logCount; }
 
-    /** Number of leaf blocks in the felled tree. Same availability rules as getLogCount(). */
+    /** Leaves in the felled tree. Same -1 rule as getLogCount(). */
     public int getLeafCount() { return leafCount; }
 
-    /** Position of the processed block. See class javadoc for availability. */
+    /** Position of the processed block. */
     @Nullable
     public BlockPos getBlockPos() { return blockPos; }
 
-    /**
-     * Unmodifiable metadata map. Uses the same keys as RecipeFinishedContext,
-     * notably createrecipehooks:owner_uuid.
-     */
+    /** Metadata map, most notably the createrecipehooks:owner_uuid key. */
     @NotNull
     public Map<String, Object> getMetadata() { return metadata; }
 
-    /** System.nanoTime() captured when the builder was created inside the hook. */
+    /** System.nanoTime() at the moment of the event. */
     public long getTimestamp() { return timestamp; }
 
-    // ------------------------------------------------------------------ //
-    //  Builder                                                             //
-    // ------------------------------------------------------------------ //
-
-    /** Entry point. source, level and blockState are required. */
+    /** Starts a builder. Source, level and blockState are required. */
     public static Builder of(@NotNull RecipeSource source, @NotNull Level level, @NotNull BlockState blockState) {
         Objects.requireNonNull(source,     "source must not be null");
         Objects.requireNonNull(level,      "level must not be null");
@@ -147,14 +129,14 @@ public final class BlockProcessedContext {
             return this;
         }
 
-        /** Sets tree size for treeCut events. Pass -1, -1 when unknown (Dynamic Trees). */
+        /** Sets tree size for treeCut events, -1 when unknown. */
         public Builder treeSize(int logCount, int leafCount) {
             this.logCount  = logCount;
             this.leafCount = leafCount;
             return this;
         }
 
-        /** Adds a metadata entry. Key should be namespaced: "modid:key". */
+        /** Adds one metadata entry, key should be namespaced like "modid:key". */
         public Builder meta(@NotNull String key, @NotNull Object value) {
             if (this.metadata.isEmpty()) {
                 this.metadata = new HashMap<>();

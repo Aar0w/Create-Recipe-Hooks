@@ -6,24 +6,15 @@ import org.jetbrains.annotations.Nullable;
 import java.util.UUID;
 
 /**
- * Reads the CRH owner UUID out of a contraption actor's serialized block-entity NBT.
- *
- * When a contraption assembles, Create serializes every block entity via
- * saveWithFullMetadata() into MovementContext.blockEntityData. Machines
- * whose block entities implement ICrhOwnable write the placing player's UUID
- * under the crh:owner key, so the attribution travels with the contraption
- * without any world lookups.
+ * Reads the owner UUID from a contraption actor's saved block entity NBT, so
+ * attribution keeps working while the machine is moving.
  */
 public final class ContraptionOwner {
 
     /** NBT key written by all ICrhOwnable mixins. */
     public static final String NBT_KEY = "crh:owner";
 
-    /**
-     * @param blockEntityData MovementContext.blockEntityData; may be null
-     *                        for blocks without a block entity
-     * @return the owner UUID, or null when absent
-     */
+    /** Returns the owner UUID from MovementContext.blockEntityData, or null. */
     @Nullable
     public static UUID fromBlockEntityData(@Nullable CompoundTag blockEntityData) {
         if (blockEntityData == null || !blockEntityData.hasUUID(NBT_KEY))

@@ -39,12 +39,7 @@ public final class NeoForgeAdapter implements IRecipeFinishedListener {
         MinecraftForge.EVENT_BUS.post(new CreateRecipeFinishedEvent(ctx));
     }
 
-    /**
-     * Records the placing player's UUID in the BlockEntity's NBT for all CRH-tracked
-     * machines that implement ICrhOwnable.
-     *
-     * CEI Printer is matched by registry name (no hard compile-time CEI dependency).
-     */
+    /** Stores the placer's UUID on every tracked machine. */
     @SubscribeEvent
     public static void onOwnableBlockPlaced(BlockEvent.EntityPlaceEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
@@ -70,9 +65,9 @@ public final class NeoForgeAdapter implements IRecipeFinishedListener {
         if (block instanceof CrushingWheelBlock)    return true;
         if (block instanceof DrillBlock)            return true;
         if (block instanceof HarvesterBlock)        return true;
-        // Deployer: Create's DeployerBlock.setPlacedBy() already sets the built-in owner field.
+        // Deployer is skipped: Create sets its own owner field on placement.
 
-        // CEI Printer, soft dependency, matched by registry name
+        // CEI Printer is matched by registry name to avoid a hard CEI dependency.
         ResourceLocation key = ForgeRegistries.BLOCKS.getKey(block);
         return key != null
             && "create_enchantment_industry".equals(key.getNamespace())

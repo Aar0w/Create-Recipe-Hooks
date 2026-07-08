@@ -9,11 +9,6 @@ package dev.createrecipehooks.api;
 @FunctionalInterface
 public interface IBlockProcessedListener {
 
-    /**
-     * Called when a Create machine has processed a world block (or felled a tree,
-     * depending on which channel this listener was registered to).
-     *
-     * @param ctx Snapshot of the processed block. Never null.
-     */
+    /** Called on the server tick thread for every processed block or felled tree. */
     void onBlockProcessed(BlockProcessedContext ctx);
 }

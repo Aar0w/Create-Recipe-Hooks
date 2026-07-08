@@ -6,11 +6,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 /**
- * Loader-independent snapshot of one fluid output, so the common API has no dependency
- * on a platform FluidStack class.
- *
- * @param fluid  Registry key of the fluid, e.g. minecraft:water
- * @param amount Amount in milli-buckets (1 bucket = 1000 mB); always >= 0
+ * One fluid output: the fluid's registry key (e.g. minecraft:water) and the amount in
+ * milli-buckets. Keeps the common API free of a platform FluidStack dependency.
  */
 public record FluidAmount(@NotNull ResourceLocation fluid, int amount) {
 

@@ -1,11 +1,8 @@
 package dev.createrecipehooks.api;
 
 /**
- * Identifies which Create machine or mechanic produced an event.
- *
- * This enum is part of the stable public API: entries are never removed between minor
- * versions, new ones may be added. Some entries are reserved and fire no events yet;
- * they are marked as such below.
+ * Which machine produced the event. Entries are never removed, new ones may be added;
+ * reserved entries fire nothing yet.
  */
 public enum RecipeSource {
 

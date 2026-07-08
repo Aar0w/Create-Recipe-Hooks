@@ -19,20 +19,9 @@ public final class RecipeHookRegistry implements IRegistrar {
 
     private static final Logger LOGGER = LogManager.getLogger("CreateRecipeHooks/Registry");
 
-    /** Tracks accepted provider ids to detect duplicates. */
     private final ConcurrentHashMap<String, IHookProvider> providers = new ConcurrentHashMap<>();
 
-    // ------------------------------------------------------------------ //
-    //  Provider registration                                               //
-    // ------------------------------------------------------------------ //
-
-    /**
-     * Registers an IHookProvider and immediately calls
-     * IHookProvider#register(IRegistrar) on it, passing this as the registrar.
-     *
-     * @param provider the provider to register
-     * @throws IllegalArgumentException if provider.getId() is null or empty
-     */
+    /** Accepts a provider and immediately lets it register its listeners. */
     public void addProvider(IHookProvider provider) {
         if (provider == null) throw new NullPointerException("provider must not be null");
 
@@ -54,7 +43,6 @@ public final class RecipeHookRegistry implements IRegistrar {
 
         LOGGER.info("[CreateRecipeHooks] Registered hook provider: '{}'", id);
 
-        // Pass 'this' as IRegistrar, the provider sees only the api interface
         try {
             provider.register(this);
         } catch (Exception e) {
@@ -62,26 +50,12 @@ public final class RecipeHookRegistry implements IRegistrar {
         }
     }
 
-    // ------------------------------------------------------------------ //
-    //  Convenience for providers to register listeners                     //
-    // ------------------------------------------------------------------ //
-
-    /**
-     * Implements IRegistrar. Providers call this inside
-     * IHookProvider#register(IRegistrar) to attach listeners.
-     *
-     * Equivalent to dev.createrecipehooks.api.CreateRecipeHooks#register.
-     */
     @Override
     public void addListener(IRecipeFinishedListener listener) {
         RecipeEventDispatcher.registerListener(listener);
     }
 
-    // ------------------------------------------------------------------ //
-    //  Diagnostics                                                         //
-    // ------------------------------------------------------------------ //
-
-    /** Returns the number of registered providers. Useful for testing. */
+    /** Number of registered providers, handy for logging. */
     public int providerCount() {
         return providers.size();
     }

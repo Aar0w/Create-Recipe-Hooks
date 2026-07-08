@@ -24,10 +24,6 @@ import java.util.Objects;
  */
 public final class RecipeFinishedContext {
 
-    // ------------------------------------------------------------------ //
-    //  Fields                                                              //
-    // ------------------------------------------------------------------ //
-
     private final RecipeSource           source;
     private final Level                  level;
     private final long                   timestamp;
@@ -42,10 +38,6 @@ public final class RecipeFinishedContext {
     private final List<FluidAmount>      fluidOutputs;
     private final Map<String, Object>    metadata;
 
-    // ------------------------------------------------------------------ //
-    //  Constructor, private, use Builder                                  //
-    // ------------------------------------------------------------------ //
-
     private RecipeFinishedContext(Builder b) {
         this.source       = b.source;
         this.level        = b.level;
@@ -54,30 +46,19 @@ public final class RecipeFinishedContext {
         this.recipeId     = b.recipeId;
         this.recipe       = b.recipe;
         this.player       = b.player;
-        // ArrayList is used instead of List.copyOf() because Rhino (KubeJS JS engine) cannot
-        // reflectively access ImmutableCollections$List12 (non-exported java.base internal class).
-        // ArrayList is in the exported java.util package and is accessible from script engines.
+        // ArrayList instead of List.copyOf(): Rhino (KubeJS) cannot access the JDK's
+        // internal immutable list classes.
         this.itemOutputs  = new ArrayList<>(b.itemOutputs);
         this.itemInputs   = new ArrayList<>(b.itemInputs);
         this.fluidOutputs = new ArrayList<>(b.fluidOutputs);
         this.metadata     = Collections.unmodifiableMap(new HashMap<>(b.metadata));
     }
 
-    // ------------------------------------------------------------------ //
-    //  Guaranteed fields                                                   //
-    // ------------------------------------------------------------------ //
-
-    /**
-     * The machine or mechanic that produced this recipe completion.
-     * Never null.
-     */
+    /** The machine that completed the recipe. Never null. */
     @NotNull
     public RecipeSource getSource() { return source; }
 
-    /**
-     * The server-side Level where the recipe completed.
-     * Never null. Events are never dispatched on the client.
-     */
+    /** The server level. Never null, events never fire on the client. */
     @NotNull
     public Level getLevel() { return level; }
 
@@ -86,10 +67,6 @@ public final class RecipeFinishedContext {
      * subtract two timestamps to get nanosecond durations.
      */
     public long getTimestamp() { return timestamp; }
-
-    // ------------------------------------------------------------------ //
-    //  Optional fields                                                     //
-    // ------------------------------------------------------------------ //
 
     /**
      * Block position of the machine. Null for Fan processing (item in the world),
@@ -100,7 +77,7 @@ public final class RecipeFinishedContext {
 
     /**
      * Registry ID of the completed recipe, e.g. create:mixing/iron_nugget.
-     * Null when no recipe object was involved (capability emptying on the Item Drain).
+     * Null when no recipe object was involved (capability filling and emptying, potions).
      */
     @Nullable
     public ResourceLocation getRecipeId() { return recipeId; }
@@ -140,43 +117,23 @@ public final class RecipeFinishedContext {
     @NotNull
     public List<FluidAmount> getFluidOutputs() { return fluidOutputs; }
 
-    /**
-     * Unmodifiable map of addon-defined metadata.
-     * Keys are namespaced strings (e.g. "create_enchantment_industry:experience_amount").
-     * Empty for all built-in sources.
-     */
+    /** Metadata map, most notably the createrecipehooks:owner_uuid key. */
     @NotNull
     public Map<String, Object> getMetadata() { return metadata; }
 
-    // ------------------------------------------------------------------ //
-    //  Builder                                                             //
-    // ------------------------------------------------------------------ //
-
-    /**
-     * Entry point for constructing a RecipeFinishedContext.
-     *
-     * Only source and level are required; all other fields are optional.
-     */
+    /** Starts a builder. Only source and level are required. */
     public static Builder of(@NotNull RecipeSource source, @NotNull Level level) {
         Objects.requireNonNull(source, "source must not be null");
         Objects.requireNonNull(level,  "level must not be null");
         return new Builder(source, level);
     }
 
-    /**
-     * Builder for RecipeFinishedContext.
-     *
-     * Not thread-safe during construction; call build() on the same thread
-     * that holds all the data, then pass the immutable context to other threads.
-     */
     public static final class Builder {
 
-        // Required
         private final RecipeSource source;
         private final Level        level;
         private final long         timestamp = System.nanoTime();
 
-        // Optional
         @Nullable private BlockPos         blockPos;
         @Nullable private ResourceLocation recipeId;
         @Nullable private Recipe<?>        recipe;
@@ -191,64 +148,50 @@ public final class RecipeFinishedContext {
             this.level  = level;
         }
 
-        /** Sets the block position of the completing machine. */
+        /** Sets the block position of the machine. */
         public Builder blockPos(@Nullable BlockPos pos) {
             this.blockPos = pos;
             return this;
         }
 
-        /**
-         * Sets both recipeId and recipe from a Recipe object.
-         * Extracts the id via recipe.getId().
-         */
+        /** Sets both the recipe and its id. */
         public Builder recipe(@NotNull Recipe<?> r) {
             this.recipe   = r;
             this.recipeId = r.getId();
             return this;
         }
 
-        /**
-         * Sets only the recipe id (for cases where only the id is available,
-         * e.g. vanilla crafting in MechanicalCrafter).
-         */
+        /** Sets only the recipe id, for cases where the recipe object is not available. */
         public Builder recipeId(@Nullable ResourceLocation id) {
             this.recipeId = id;
             return this;
         }
 
-        /** Sets the player (real or FakePlayer) involved in this completion. */
+        /** Sets the player involved in this completion. */
         public Builder player(@Nullable ServerPlayer p) {
             this.player = p;
             return this;
         }
 
-        /** Sets item outputs. The list is defensively copied. */
+        /** Sets item outputs. */
         public Builder itemOutputs(@NotNull List<ItemStack> outputs) {
             this.itemOutputs = outputs;
             return this;
         }
 
-        /** Sets item inputs (pre-consumption snapshot). The list is defensively copied. */
+        /** Sets item inputs, snapshotted before consumption. */
         public Builder itemInputs(@NotNull List<ItemStack> inputs) {
             this.itemInputs = inputs;
             return this;
         }
 
-        /**
-         * Sets fluid outputs. Convert platform FluidStack objects to
-         * FluidAmount in the mixin/adapter layer before calling this.
-         *
-         * @param fluids list of fluid amounts; defensively copied
-         */
+        /** Sets fluid outputs. */
         public Builder fluidOutputs(@NotNull List<FluidAmount> fluids) {
             this.fluidOutputs = List.copyOf(fluids);
             return this;
         }
 
-        /**
-         * Adds a single addon-defined metadata entry.
-         * Key should be namespaced: "modid:key".
-         */
+        /** Adds one metadata entry, key should be namespaced like "modid:key". */
         public Builder meta(@NotNull String key, @NotNull Object value) {
             if (this.metadata.isEmpty()) {
                 this.metadata = new HashMap<>();
@@ -257,7 +200,6 @@ public final class RecipeFinishedContext {
             return this;
         }
 
-        /** Builds the immutable RecipeFinishedContext. */
         @NotNull
         public RecipeFinishedContext build() {
             return new RecipeFinishedContext(this);
