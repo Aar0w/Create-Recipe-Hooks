@@ -8,11 +8,9 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Registry for IHookProvider registrations, keyed by provider id (duplicates are
- * rejected with a warning). Internal, addon authors should go through
- * CreateRecipeHooks.registerProvider.
- */
+// Registry for IHookProvider registrations, keyed by provider id (duplicates are
+// rejected with a warning). Internal, addon authors should go through
+// CreateRecipeHooks.registerProvider.
 public final class RecipeHookRegistry implements IRegistrar {
 
     public static final RecipeHookRegistry INSTANCE = new RecipeHookRegistry();
@@ -21,7 +19,7 @@ public final class RecipeHookRegistry implements IRegistrar {
 
     private final ConcurrentHashMap<String, IHookProvider> providers = new ConcurrentHashMap<>();
 
-    /** Accepts a provider and immediately lets it register its listeners. */
+    // Accepts a provider and immediately lets it register its listeners.
     public void addProvider(IHookProvider provider) {
         if (provider == null) throw new NullPointerException("provider must not be null");
 
@@ -55,7 +53,7 @@ public final class RecipeHookRegistry implements IRegistrar {
         RecipeEventDispatcher.registerListener(listener);
     }
 
-    /** Number of registered providers, handy for logging. */
+    // Number of registered providers, handy for logging.
     public int providerCount() {
         return providers.size();
     }

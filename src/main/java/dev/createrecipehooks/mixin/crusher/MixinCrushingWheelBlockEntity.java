@@ -13,11 +13,9 @@ import org.spongepowered.asm.mixin.Unique;
 
 import java.util.UUID;
 
-/**
- * Owner tracking for the Crushing Wheel block, used by MixinCrushingWheelController
- * as the attribution fallback for belt and hopper fed input. The wheel block entity does
- * not declare its own NBT methods, so overrides are merged in via the superclass.
- */
+// Owner tracking for the Crushing Wheel block, used by MixinCrushingWheelController
+// as the attribution fallback for belt and hopper fed input. The wheel block entity does
+// not declare its own NBT methods, so overrides are merged in via the superclass.
 @Mixin(value = CrushingWheelBlockEntity.class, remap = false)
 public abstract class MixinCrushingWheelBlockEntity extends KineticBlockEntity implements ICrhOwnable {
 

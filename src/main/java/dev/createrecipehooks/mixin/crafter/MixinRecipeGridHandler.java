@@ -21,12 +21,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Fires the MECHANICAL_CRAFTER event when a crafter chain produces its result,
- * covering both Create's mechanical crafting recipes and vanilla crafting.
- * The SRG method name in the vanilla-path target is intentional: production Forge
- * keeps SRG method names at mixin time, and the wrap simply no-ops in dev.
- */
+// Fires the MECHANICAL_CRAFTER event when a crafter chain produces its result,
+// covering both Create's mechanical crafting recipes and vanilla crafting.
+// The SRG method name in the vanilla-path target is intentional: production Forge
+// keeps SRG method names at mixin time, and the wrap simply no-ops in dev.
 @Mixin(value = RecipeGridHandler.class, remap = false)
 public abstract class MixinRecipeGridHandler {
 

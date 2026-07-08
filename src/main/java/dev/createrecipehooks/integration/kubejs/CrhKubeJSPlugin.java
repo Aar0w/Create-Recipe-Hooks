@@ -9,29 +9,25 @@ import dev.latvian.mods.kubejs.event.EventHandler;
 import dev.latvian.mods.kubejs.event.Extra;
 import dev.latvian.mods.kubejs.script.ScriptType;
 
-/**
- * KubeJS integration, registers the CRHEvents group (recipeFinished, blockProcessed,
- * treeCut). Loaded only by KubeJS via kubejs.plugins.txt, so the dependency stays
- * optional; never reference this class from anywhere else in the mod.
- */
+// KubeJS integration, registers the CRHEvents group (recipeFinished, blockProcessed,
+// treeCut). Loaded only by KubeJS via kubejs.plugins.txt, so the dependency stays
+// optional; never reference this class from anywhere else in the mod.
 public class CrhKubeJSPlugin extends KubeJSPlugin {
 
     public static final EventGroup GROUP = EventGroup.of("CRHEvents");
 
-    /**
-     * Extra.STRING (not REQUIRES_STRING), the source filter is optional:
-     * scripts may subscribe with or without it.
-     */
+    // Extra.STRING (not REQUIRES_STRING), the source filter is optional:
+    // scripts may subscribe with or without it.
     public static final EventHandler RECIPE_FINISHED = GROUP
         .server("recipeFinished", () -> RecipeFinishedEventJS.class)
         .extra(Extra.STRING);
 
-    /** One event per block broken by a Drill, crop cut by a Harvester, lone block cut by a Saw. */
+    // One event per block broken by a Drill, crop cut by a Harvester, lone block cut by a Saw.
     public static final EventHandler BLOCK_PROCESSED = GROUP
         .server("blockProcessed", () -> BlockProcessedEventJS.class)
         .extra(Extra.STRING);
 
-    /** One event per tree felled by a Saw. Mutually exclusive with blockProcessed. */
+    // One event per tree felled by a Saw. Mutually exclusive with blockProcessed.
     public static final EventHandler TREE_CUT = GROUP
         .server("treeCut", () -> TreeCutEventJS.class)
         .extra(Extra.STRING);

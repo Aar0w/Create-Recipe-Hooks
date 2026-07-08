@@ -16,12 +16,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * Snapshot of data available at the moment a Create recipe completed. Source, level and
- * timestamp are always present; everything else is optional, check for null or empty
- * list before use. Read live objects (level, player, item stacks) only on the server
- * tick thread and treat the stacks as read-only.
- */
+// Snapshot of data available at the moment a Create recipe completed. Source, level and
+// timestamp are always present; everything else is optional, check for null or empty
+// list before use. Read live objects (level, player, item stacks) only on the server
+// tick thread and treat the stacks as read-only.
 public final class RecipeFinishedContext {
 
     private final RecipeSource           source;
@@ -54,74 +52,58 @@ public final class RecipeFinishedContext {
         this.metadata     = Collections.unmodifiableMap(new HashMap<>(b.metadata));
     }
 
-    /** The machine that completed the recipe. Never null. */
+    // The machine that completed the recipe. Never null.
     @NotNull
     public RecipeSource getSource() { return source; }
 
-    /** The server level. Never null, events never fire on the client. */
+    // The server level. Never null, events never fire on the client.
     @NotNull
     public Level getLevel() { return level; }
 
-    /**
-     * System.nanoTime() at the moment of the event. Not a wall-clock time,
-     * subtract two timestamps to get nanosecond durations.
-     */
+    // System.nanoTime() at the moment of the event. Not a wall-clock time,
+    // subtract two timestamps to get nanosecond durations.
     public long getTimestamp() { return timestamp; }
 
-    /**
-     * Block position of the machine. Null for Fan processing (item in the world),
-     * belt Deployer and Sand Paper.
-     */
+    // Block position of the machine. Null for Fan processing (item in the world),
+    // belt Deployer and Sand Paper.
     @Nullable
     public BlockPos getBlockPos() { return blockPos; }
 
-    /**
-     * Registry ID of the completed recipe, e.g. create:mixing/iron_nugget.
-     * Null when no recipe object was involved (capability filling and emptying, potions).
-     */
+    // Registry ID of the completed recipe, e.g. create:mixing/iron_nugget.
+    // Null when no recipe object was involved (capability filling and emptying, potions).
     @Nullable
     public ResourceLocation getRecipeId() { return recipeId; }
 
-    /**
-     * The recipe object. May be null even when getRecipeId() is present, for example
-     * vanilla crafting in the Mechanical Crafter stores only the id.
-     */
+    // The recipe object. May be null even when getRecipeId() is present, for example
+    // vanilla crafting in the Mechanical Crafter stores only the id.
     @Nullable
     public Recipe<?> getRecipe() { return recipe; }
 
-    /**
-     * The player involved in this completion. Non-null only for SAND_PAPER hand use;
-     * for every other source use the owner UUID from the metadata instead.
-     */
+    // The player involved in this completion. Non-null only for SAND_PAPER hand use;
+    // for every other source use the owner UUID from the metadata instead.
     @Nullable
     public ServerPlayer getPlayer() { return player; }
 
-    /**
-     * Item stacks produced by this recipe. Never null, may be empty.
-     * Treat the stacks as read-only, call stack.copy() before storing or changing one.
-     */
+    // Item stacks produced by this recipe. Never null, may be empty.
+    // Treat the stacks as read-only, call stack.copy() before storing or changing one.
     @NotNull
     public List<ItemStack> getItemOutputs() { return itemOutputs; }
 
-    /**
-     * Item stacks consumed as inputs (available for Fan, Sequenced Assembly, Spout,
-     * Item Drain). Never null, may be empty. Treat the stacks as read-only.
-     */
+    // Item stacks consumed as inputs (available for Fan, Sequenced Assembly, Spout,
+    // Item Drain). Never null, may be empty. Treat the stacks as read-only.
     @NotNull
     public List<ItemStack> getItemInputs() { return itemInputs; }
 
-    /**
-     * Fluid outputs in milli-buckets (Basin, Item Drain). Never null, empty for
-     * most machines.
-     */
+    // Fluid outputs in milli-buckets (Basin, Item Drain). Never null, empty for
+    // most machines.
     @NotNull
     public List<FluidAmount> getFluidOutputs() { return fluidOutputs; }
 
-    /** Metadata map, most notably the createrecipehooks:owner_uuid key. */
+    // Metadata map, most notably the createrecipehooks:owner_uuid key.
     @NotNull
     public Map<String, Object> getMetadata() { return metadata; }
 
-    /** Starts a builder. Only source and level are required. */
+    // Starts a builder. Only source and level are required.
     public static Builder of(@NotNull RecipeSource source, @NotNull Level level) {
         Objects.requireNonNull(source, "source must not be null");
         Objects.requireNonNull(level,  "level must not be null");
@@ -148,50 +130,50 @@ public final class RecipeFinishedContext {
             this.level  = level;
         }
 
-        /** Sets the block position of the machine. */
+        // Sets the block position of the machine.
         public Builder blockPos(@Nullable BlockPos pos) {
             this.blockPos = pos;
             return this;
         }
 
-        /** Sets both the recipe and its id. */
+        // Sets both the recipe and its id.
         public Builder recipe(@NotNull Recipe<?> r) {
             this.recipe   = r;
             this.recipeId = r.getId();
             return this;
         }
 
-        /** Sets only the recipe id, for cases where the recipe object is not available. */
+        // Sets only the recipe id, for cases where the recipe object is not available.
         public Builder recipeId(@Nullable ResourceLocation id) {
             this.recipeId = id;
             return this;
         }
 
-        /** Sets the player involved in this completion. */
+        // Sets the player involved in this completion.
         public Builder player(@Nullable ServerPlayer p) {
             this.player = p;
             return this;
         }
 
-        /** Sets item outputs. */
+        // Sets item outputs.
         public Builder itemOutputs(@NotNull List<ItemStack> outputs) {
             this.itemOutputs = outputs;
             return this;
         }
 
-        /** Sets item inputs, snapshotted before consumption. */
+        // Sets item inputs, snapshotted before consumption.
         public Builder itemInputs(@NotNull List<ItemStack> inputs) {
             this.itemInputs = inputs;
             return this;
         }
 
-        /** Sets fluid outputs. */
+        // Sets fluid outputs.
         public Builder fluidOutputs(@NotNull List<FluidAmount> fluids) {
             this.fluidOutputs = List.copyOf(fluids);
             return this;
         }
 
-        /** Adds one metadata entry, key should be namespaced like "modid:key". */
+        // Adds one metadata entry, key should be namespaced like "modid:key".
         public Builder meta(@NotNull String key, @NotNull Object value) {
             if (this.metadata.isEmpty()) {
                 this.metadata = new HashMap<>();

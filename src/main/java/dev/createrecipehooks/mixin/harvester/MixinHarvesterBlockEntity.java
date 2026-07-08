@@ -14,11 +14,9 @@ import org.spongepowered.asm.mixin.Unique;
 
 import java.util.UUID;
 
-/**
- * Owner tracking for the Mechanical Harvester, persisted through the vanilla NBT pair
- * so the UUID travels inside assembled contraptions and is read back by
- * MixinHarvesterMovementBehaviour.
- */
+// Owner tracking for the Mechanical Harvester, persisted through the vanilla NBT pair
+// so the UUID travels inside assembled contraptions and is read back by
+// MixinHarvesterMovementBehaviour.
 @Mixin(value = HarvesterBlockEntity.class, remap = false)
 public abstract class MixinHarvesterBlockEntity extends CachedRenderBBBlockEntity implements ICrhOwnable {
 

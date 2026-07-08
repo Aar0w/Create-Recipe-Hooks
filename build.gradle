@@ -13,7 +13,6 @@ base { archivesName = "create-recipe-hooks" }
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(17)
     withSourcesJar()
-    withJavadocJar()
 }
 
 minecraft {
@@ -168,10 +167,8 @@ publishing {
             artifactId = base.archivesName.get()   // "create-recipe-hooks"
             version    = project.version           // "1.0.0+create-6.0.8-291"
 
-            // Main jar, sources, and javadoc (built by java { withSourcesJar/withJavadocJar })
             artifact jar
             artifact sourcesJar
-            artifact javadocJar
 
             pom {
                 name        = 'Create Recipe Hooks'
@@ -218,8 +215,4 @@ publishing {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-}
-
-tasks.withType(Javadoc).configureEach {
-    options.addStringOption('Xdoclint:none', '-quiet')
 }

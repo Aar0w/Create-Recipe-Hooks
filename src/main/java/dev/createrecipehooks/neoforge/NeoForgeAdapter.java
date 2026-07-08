@@ -24,10 +24,8 @@ import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
-/**
- * Forge adapter: bridges the dispatcher to the Forge event bus and records machine
- * owners on block placement.
- */
+// Forge adapter: bridges the dispatcher to the Forge event bus and records machine
+// owners on block placement.
 public final class NeoForgeAdapter implements IRecipeFinishedListener {
 
     public static final NeoForgeAdapter INSTANCE = new NeoForgeAdapter();
@@ -39,7 +37,7 @@ public final class NeoForgeAdapter implements IRecipeFinishedListener {
         MinecraftForge.EVENT_BUS.post(new CreateRecipeFinishedEvent(ctx));
     }
 
-    /** Stores the placer's UUID on every tracked machine. */
+    // Stores the placer's UUID on every tracked machine.
     @SubscribeEvent
     public static void onOwnableBlockPlaced(BlockEvent.EntityPlaceEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
@@ -74,7 +72,7 @@ public final class NeoForgeAdapter implements IRecipeFinishedListener {
             && "printer".equals(key.getPath());
     }
 
-    /** Wires this adapter into the dispatch chain. Called once from the mod constructor. */
+    // Wires this adapter into the dispatch chain. Called once from the mod constructor.
     public static void register() {
         RecipeEventDispatcher.registerListener(INSTANCE);
         RecipeEventDispatcher.registerBlockProcessedListener(

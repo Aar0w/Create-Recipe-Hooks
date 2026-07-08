@@ -15,7 +15,8 @@ import net.minecraftforge.network.NetworkConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-
+// Mod entry point (Forge). Wires the dispatcher into the Forge event bus and lets addons
+// register IHookProvider instances via IMC message register_hook_provider.
 @Mod(CreateRecipeHooksMod.MOD_ID)
 public class CreateRecipeHooksMod {
 

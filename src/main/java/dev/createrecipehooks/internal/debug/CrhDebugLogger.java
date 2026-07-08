@@ -18,10 +18,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 
-/**
- * File logger for debug mode (-Dcrh.debug=true): writes one line per event to
- * logs/crh-events.log. Internal, not part of the public API.
- */
+// File logger for debug mode (-Dcrh.debug=true): writes one line per event to
+// logs/crh-events.log. Internal, not part of the public API.
 public final class CrhDebugLogger {
 
     private static final String LOGGER_NAME = "CRH-Events";
@@ -32,7 +30,7 @@ public final class CrhDebugLogger {
 
     private static volatile Logger fileLogger;
 
-    /** Call once at mod startup when debug mode is active. */
+    // Call once at mod startup when debug mode is active.
     public static void init() {
         try {
             LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
@@ -67,10 +65,8 @@ public final class CrhDebugLogger {
         }
     }
 
-    /**
-     * Writes one log line for the given context.
-     * No-op if init() was not called or failed.
-     */
+    // Writes one log line for the given context.
+    // No-op if init() was not called or failed.
     public static void log(RecipeFinishedContext ctx) {
         Logger logger = fileLogger;
         if (logger == null) return;

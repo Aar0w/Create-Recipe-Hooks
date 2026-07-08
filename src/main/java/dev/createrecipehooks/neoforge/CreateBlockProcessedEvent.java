@@ -12,11 +12,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-/**
- * Forge event fired when a Drill breaks a block, a Harvester cuts a plant, or a Saw
- * cuts a lone block that is not part of a tree. Tree felling fires CreateTreeCutEvent
- * instead, never both. Posted on the Forge event bus, server side only, not cancellable.
- */
+// Forge event fired when a Drill breaks a block, a Harvester cuts a plant, or a Saw
+// cuts a lone block that is not part of a tree. Tree felling fires CreateTreeCutEvent
+// instead, never both. Posted on the Forge event bus, server side only, not cancellable.
 public final class CreateBlockProcessedEvent extends Event {
 
     private final BlockProcessedContext context;

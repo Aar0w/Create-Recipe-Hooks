@@ -23,11 +23,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Mechanical Saw as a contraption actor: fires treeCut when the cut block is part of
- * a tree (with exact log and leaf counts) and blockProcessed for a lone block.
- * Dynamic Trees mod trees fire treeCut with counts of -1.
- */
+// Mechanical Saw as a contraption actor: fires treeCut when the cut block is part of
+// a tree (with exact log and leaf counts) and blockProcessed for a lone block.
+// Dynamic Trees mod trees fire treeCut with counts of -1.
 @Mixin(value = SawMovementBehaviour.class, remap = false)
 public class MixinSawMovementBehaviour {
 

@@ -12,10 +12,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Script-facing wrapper for CRHEvents.blockProcessed. Not cancellable, the block is
- * already gone when this fires.
- */
+// Script-facing wrapper for CRHEvents.blockProcessed. Not cancellable, the block is
+// already gone when this fires.
 public class BlockProcessedEventJS extends EventJS {
 
     public static final String OWNER_UUID_KEY = "createrecipehooks:owner_uuid";
@@ -26,31 +24,29 @@ public class BlockProcessedEventJS extends EventJS {
         this.ctx = ctx;
     }
 
-    /** Source machine name: "MECHANICAL_DRILL", "MECHANICAL_HARVESTER", "MECHANICAL_SAW". */
+    // Source machine name: "MECHANICAL_DRILL", "MECHANICAL_HARVESTER", "MECHANICAL_SAW".
     public String getSource() {
         return ctx.getSource().name();
     }
 
-    /** Processed block id as string, e.g. "minecraft:stone". Never null. */
+    // Processed block id as string, e.g. "minecraft:stone". Never null.
     public String getBlockId() {
         return ctx.getBlockId().toString();
     }
 
-    /** Full block state of the processed block (crop age etc.). Never null. */
+    // Full block state of the processed block (crop age etc.). Never null.
     public BlockState getBlockState() {
         return ctx.getBlockState();
     }
 
-    /** True when the machine was moving as part of a contraption. */
+    // True when the machine was moving as part of a contraption.
     public boolean isContraption() {
         return ctx.isContraption();
     }
 
-    /**
-     * Resolves the attributed player: whoever placed the machine (read from the machine's
-     * NBT, or from the contraption's serialized NBT for contraption actors).
-     * Null when there is no attribution or the player is offline.
-     */
+    // Resolves the attributed player: whoever placed the machine (read from the machine's
+    // NBT, or from the contraption's serialized NBT for contraption actors).
+    // Null when there is no attribution or the player is offline.
     @Nullable
     public ServerPlayer getOwner() {
         Object uuidStr = ctx.getMetadata().get(OWNER_UUID_KEY);
@@ -68,7 +64,7 @@ public class BlockProcessedEventJS extends EventJS {
         }
     }
 
-    /** Raw owner UUID string from metadata, or null. Present even when the player is offline. */
+    // Raw owner UUID string from metadata, or null. Present even when the player is offline.
     @Nullable
     public String getOwnerUuid() {
         Object uuidStr = ctx.getMetadata().get(OWNER_UUID_KEY);
@@ -92,7 +88,7 @@ public class BlockProcessedEventJS extends EventJS {
         return ctx.getTimestamp();
     }
 
-    /** Escape hatch: the full underlying context for anything not wrapped above. */
+    // Escape hatch: the full underlying context for anything not wrapped above.
     public BlockProcessedContext getContext() {
         return ctx;
     }

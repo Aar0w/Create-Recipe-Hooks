@@ -23,11 +23,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Fires the ITEM_DRAIN_EMPTYING event when the drain empties a container, covering all
- * three paths: emptying recipes (with recipe id), fluid capability containers such as
- * buckets, and potions (both without a recipe id).
- */
+// Fires the ITEM_DRAIN_EMPTYING event when the drain empties a container, covering all
+// three paths: emptying recipes (with recipe id), fluid capability containers such as
+// buckets, and potions (both without a recipe id).
 @Mixin(value = GenericItemEmptying.class, remap = false)
 public abstract class MixinGenericItemEmptying {
 

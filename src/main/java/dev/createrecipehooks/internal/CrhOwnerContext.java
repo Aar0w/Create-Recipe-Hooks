@@ -4,11 +4,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-/**
- * ThreadLocal carrier for the owner UUID of the machine currently processing. Machine
- * block entity mixins set it before calling into Create's shared utility classes, the
- * utility-class mixins read it when building the event, and it is cleared on return.
- */
+// ThreadLocal carrier for the owner UUID of the machine currently processing. Machine
+// block entity mixins set it before calling into Create's shared utility classes, the
+// utility-class mixins read it when building the event, and it is cleared on return.
 public final class CrhOwnerContext {
 
     private static final ThreadLocal<UUID> CURRENT = new ThreadLocal<>();

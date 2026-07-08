@@ -14,10 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Script-facing wrapper for CRHEvents.recipeFinished. Not cancellable, the recipe has
- * already been applied when this fires.
- */
+// Script-facing wrapper for CRHEvents.recipeFinished. Not cancellable, the recipe has
+// already been applied when this fires.
 public class RecipeFinishedEventJS extends EventJS {
 
     public static final String OWNER_UUID_KEY = "createrecipehooks:owner_uuid";
@@ -28,22 +26,20 @@ public class RecipeFinishedEventJS extends EventJS {
         this.ctx = ctx;
     }
 
-    /** Source machine name, e.g. "MILLSTONE", "FAN_BLASTING". Never null. */
+    // Source machine name, e.g. "MILLSTONE", "FAN_BLASTING". Never null.
     public String getSource() {
         return ctx.getSource().name();
     }
 
-    /** Recipe id as string, e.g. "create:milling/wheat". Null for capability fills/empties. */
+    // Recipe id as string, e.g. "create:milling/wheat". Null for capability fills/empties.
     @Nullable
     public String getRecipeId() {
         return ctx.getRecipeId() != null ? ctx.getRecipeId().toString() : null;
     }
 
-    /**
-     * Resolves the attributed player: the direct player for SAND_PAPER, otherwise the
-     * machine owner / item thrower from the createrecipehooks:owner_uuid metadata.
-     * Null when there is no attribution or the player is offline.
-     */
+    // Resolves the attributed player: the direct player for SAND_PAPER, otherwise the
+    // machine owner / item thrower from the createrecipehooks:owner_uuid metadata.
+    // Null when there is no attribution or the player is offline.
     @Nullable
     public ServerPlayer getOwner() {
         if (ctx.getPlayer() != null)
@@ -64,7 +60,7 @@ public class RecipeFinishedEventJS extends EventJS {
         }
     }
 
-    /** Raw owner UUID string from metadata, or null. Present even when the player is offline. */
+    // Raw owner UUID string from metadata, or null. Present even when the player is offline.
     @Nullable
     public String getOwnerUuid() {
         Object uuidStr = ctx.getMetadata().get(OWNER_UUID_KEY);
@@ -100,7 +96,7 @@ public class RecipeFinishedEventJS extends EventJS {
         return ctx.getTimestamp();
     }
 
-    /** Escape hatch: the full underlying context for anything not wrapped above. */
+    // Escape hatch: the full underlying context for anything not wrapped above.
     public RecipeFinishedContext getContext() {
         return ctx;
     }

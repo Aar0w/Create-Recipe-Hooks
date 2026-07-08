@@ -11,11 +11,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Carries the Fan owner's UUID through CrhOwnerContext for the whole
- * AirCurrent.tick(), covering both fan modes (items on belts and items lying
- * in the air current) so MixinRecipeApplier can attribute FAN_* events.
- */
+// Carries the Fan owner's UUID through CrhOwnerContext for the whole
+// AirCurrent.tick(), covering both fan modes (items on belts and items lying
+// in the air current) so MixinRecipeApplier can attribute FAN_* events.
 @Mixin(value = AirCurrent.class, remap = false)
 public abstract class MixinAirCurrent {
 

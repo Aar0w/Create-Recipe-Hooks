@@ -13,12 +13,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * Snapshot of data for a Create machine processing a world block: the Drill breaking
- * a block, the Harvester cutting a plant, the Saw cutting a lone block (blockProcessed
- * events) or felling a whole tree (treeCut events). No recipe is involved, so unlike
- * RecipeFinishedContext there is no recipe id and no item outputs.
- */
+// Snapshot of data for a Create machine processing a world block: the Drill breaking
+// a block, the Harvester cutting a plant, the Saw cutting a lone block (blockProcessed
+// events) or felling a whole tree (treeCut events). No recipe is involved, so unlike
+// RecipeFinishedContext there is no recipe id and no item outputs.
 public final class BlockProcessedContext {
 
     private final RecipeSource        source;
@@ -45,51 +43,47 @@ public final class BlockProcessedContext {
         this.metadata    = Collections.unmodifiableMap(new HashMap<>(b.metadata));
     }
 
-    /** The machine that processed the block. Never null. */
+    // The machine that processed the block. Never null.
     @NotNull
     public RecipeSource getSource() { return source; }
 
-    /** The server-side Level. Never null; events never fire client-side. */
+    // The server-side Level. Never null; events never fire client-side.
     @NotNull
     public Level getLevel() { return level; }
 
-    /**
-     * State of the processed block, captured right before it broke. For treeCut events
-     * this is the starting log the saw touched. Never null.
-     */
+    // State of the processed block, captured right before it broke. For treeCut events
+    // this is the starting log the saw touched. Never null.
     @NotNull
     public BlockState getBlockState() { return blockState; }
 
-    /** Registry id of the processed block, e.g. minecraft:stone. Never null. */
+    // Registry id of the processed block, e.g. minecraft:stone. Never null.
     @NotNull
     public ResourceLocation getBlockId() {
         return BuiltInRegistries.BLOCK.getKey(blockState.getBlock());
     }
 
-    /** True when the machine was moving as part of a contraption. */
+    // True when the machine was moving as part of a contraption.
     public boolean isContraption() { return contraption; }
 
-    /**
-     * Logs in the felled tree, counting bamboo-like columns too. -1 when unknown
-     * (Dynamic Trees) or not a treeCut event.
-     */
+    // Logs in the felled tree, counting bamboo-like columns too. -1 when unknown
+    // (Dynamic Trees) or not a treeCut event.
     public int getLogCount() { return logCount; }
 
-    /** Leaves in the felled tree. Same -1 rule as getLogCount(). */
+    // Leaves in the felled tree. Same -1 rule as getLogCount().
     public int getLeafCount() { return leafCount; }
 
-    /** Position of the processed block. */
+    // Position of the processed block.
     @Nullable
     public BlockPos getBlockPos() { return blockPos; }
 
-    /** Metadata map, most notably the createrecipehooks:owner_uuid key. */
+    // Metadata map, most notably the createrecipehooks:owner_uuid key.
     @NotNull
     public Map<String, Object> getMetadata() { return metadata; }
 
-    /** System.nanoTime() at the moment of the event. */
+    // System.nanoTime() at the moment of the event.
     public long getTimestamp() { return timestamp; }
 
-    /** Starts a builder. Source, level and blockState are required. */
+    // Starts a builder. Source, level and blockState are required.
     public static Builder of(@NotNull RecipeSource source, @NotNull Level level, @NotNull BlockState blockState) {
         Objects.requireNonNull(source,     "source must not be null");
         Objects.requireNonNull(level,      "level must not be null");
@@ -117,26 +111,26 @@ public final class BlockProcessedContext {
             this.blockState = blockState;
         }
 
-        /** Sets the position of the processed block. */
+        // Sets the position of the processed block.
         public Builder blockPos(@Nullable BlockPos pos) {
             this.blockPos = pos;
             return this;
         }
 
-        /** Marks the event as coming from a contraption actor. */
+        // Marks the event as coming from a contraption actor.
         public Builder contraption(boolean value) {
             this.contraption = value;
             return this;
         }
 
-        /** Sets tree size for treeCut events, -1 when unknown. */
+        // Sets tree size for treeCut events, -1 when unknown.
         public Builder treeSize(int logCount, int leafCount) {
             this.logCount  = logCount;
             this.leafCount = leafCount;
             return this;
         }
 
-        /** Adds one metadata entry, key should be namespaced like "modid:key". */
+        // Adds one metadata entry, key should be namespaced like "modid:key".
         public Builder meta(@NotNull String key, @NotNull Object value) {
             if (this.metadata.isEmpty()) {
                 this.metadata = new HashMap<>();

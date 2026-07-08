@@ -13,11 +13,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
 
-/**
- * Owner tracking for the Mechanical Crafter. The output crafter's UUID is handed to
- * MixinRecipeGridHandler through CrhOwnerContext around the
- * tryToApplyRecipe call in tick().
- */
+// Owner tracking for the Mechanical Crafter. The output crafter's UUID is handed to
+// MixinRecipeGridHandler through CrhOwnerContext around the
+// tryToApplyRecipe call in tick().
 @Mixin(value = MechanicalCrafterBlockEntity.class, remap = false)
 public abstract class MixinMechanicalCrafterBlockEntity implements ICrhOwnable {
 
