@@ -22,18 +22,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Fabric port of the Forge {@code MixinRecipeGridHandler}.
- *
- * <p>Key difference from the Forge version: the vanilla-crafting WrapOperation targets
- * {@code RecipeManager.getRecipeFor} by its <em>Mojmap name with remapping enabled</em> —
- * Loom's refmap converts it to intermediary for runtime. The Forge version had to hardcode
- * the SRG name {@code m_44015_} with {@code remap = false}; no such hack is needed here.
- *
- * <p>Verified against Create Fabric 6.0.8.1 {@code tryToApplyRecipe} (line 142): calls
- * {@code getRecipeFor(RecipeType.CRAFTING, inv, world)} then
- * {@code AllRecipeTypes.MECHANICAL_CRAFTING.find(inv, world)} — same two capture points.
- */
+// Fires the MECHANICAL_CRAFTER event when a crafter chain produces its result,
+// covering both Create's mechanical crafting recipes and vanilla crafting.
 @Mixin(RecipeGridHandler.class)
 public abstract class MixinRecipeGridHandler {
 
@@ -53,7 +43,7 @@ public abstract class MixinRecipeGridHandler {
         CAPTURED_RECIPE.remove();
     }
 
-    // ── Vanilla crafting path ────────────────────────────────────────────────
+    // Vanilla crafting recipe path.
 
     @WrapOperation(
         method = "tryToApplyRecipe(Lnet/minecraft/world/level/Level;" +
@@ -79,7 +69,7 @@ public abstract class MixinRecipeGridHandler {
         return result;
     }
 
-    // ── MechanicalCrafting path ──────────────────────────────────────────────
+    // Mechanical crafting recipe path.
 
     @WrapOperation(
         method = "tryToApplyRecipe(Lnet/minecraft/world/level/Level;" +
@@ -103,7 +93,7 @@ public abstract class MixinRecipeGridHandler {
         return result;
     }
 
-    // ── Dispatch at RETURN ───────────────────────────────────────────────────
+
 
     @Inject(
         method = "tryToApplyRecipe(Lnet/minecraft/world/level/Level;" +

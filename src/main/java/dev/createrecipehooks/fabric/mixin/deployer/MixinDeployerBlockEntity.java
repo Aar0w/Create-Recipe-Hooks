@@ -8,11 +8,8 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.UUID;
 
-/**
- * Fabric port: exposes Create's built-in {@code protected UUID owner} through
- * {@link ICrhOwnable}. Verified in Create Fabric 6.0.8.1 (field at line 83, NBT key
- * {@code "Owner"} at lines 389/415) — identical to Forge.
- */
+// Exposes Create's built-in Deployer owner field through ICrhOwnable.
+// Create persists it itself, so no NBT handling is needed here.
 @Mixin(DeployerBlockEntity.class)
 public abstract class MixinDeployerBlockEntity implements ICrhOwnable {
 

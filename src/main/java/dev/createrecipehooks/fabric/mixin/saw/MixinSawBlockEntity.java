@@ -32,18 +32,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Fabric port of the Forge {@code MixinSawBlockEntity}.
- *
- * <p>Create Fabric 6.0.8.1 {@code applyRecipe()} differs from Forge: an extra early-return
- * path for Package items at the top. RETURN instructions: package path (0), empty recipes (1),
- * final (2) — ordinal 2 still targets the final return, same as Forge.
- *
- * <p>Outputs are captured from the {@code list} local (List ordinal 0) instead of reading
- * the inventory: the Fabric {@code ProcessingInventory} extends Porting Lib's
- * ItemStackHandler whose API differs from Forge; the local avoids that dependency entirely.
- * {@code recipes} is List ordinal 1 at the final return.
- */
+// Mechanical Saw hooks: fires MECHANICAL_SAW recipe events for the upward-facing saw,
+// treeCut and blockProcessed events for the horizontal world-cutting saw, and tracks
+// the Saw's owner for attribution.
 @Mixin(SawBlockEntity.class)
 public abstract class MixinSawBlockEntity implements ICrhOwnable {
 
@@ -105,14 +96,7 @@ public abstract class MixinSawBlockEntity implements ICrhOwnable {
         RecipeEventDispatcher.dispatch(builder.build());
     }
 
-    // ------------------------------------------------------------------ //
-    //  Tree cutting (horizontal saw breaking world blocks)                 //
-    //  Same two-path split as MixinSawMovementBehaviour: findDynamicTree   //
-    //  (Dynamic Trees mod, unknown size) and findTree (Create's scan —     //
-    //  non-empty logs = treeCut, empty = lone-block blockProcessed).       //
-    //  The pos argument of both wrapped calls is the broken block's pos.   //
-    // ------------------------------------------------------------------ //
-
+    // Tree cutting (horizontal saw): non-empty logs = treeCut, empty = blockProcessed.
     @WrapOperation(
         method = "onBlockBroken(Lnet/minecraft/world/level/block/state/BlockState;)V",
         at = @At(value = "INVOKE",

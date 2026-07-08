@@ -17,12 +17,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
 
-/**
- * Fabric port of the Forge {@code MixinBlockBreakingMovementBehaviour}: Mechanical Drill
- * as a contraption actor. The {@code instanceof DrillMovementBehaviour} filter excludes
- * the Plough (which calls {@code super.onBlockBroken}); the Saw replaces the method
- * without a super call and never reaches this hook.
- */
+// Mechanical Drill as a contraption actor: fires a blockProcessed event once per broken
+// block, attributed via the drill's NBT that travels inside the contraption. The
+// instanceof filter excludes the Plough, whose override calls super into this method.
 @Mixin(BlockBreakingMovementBehaviour.class)
 public class MixinBlockBreakingMovementBehaviour {
 

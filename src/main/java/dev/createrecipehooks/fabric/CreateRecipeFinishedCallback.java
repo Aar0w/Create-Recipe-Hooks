@@ -4,19 +4,8 @@ import dev.createrecipehooks.api.RecipeFinishedContext;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 
-/**
- * Fabric-side public event — the counterpart of the Forge {@code CreateRecipeFinishedEvent}.
- *
- * <p>Usage from another mod:
- * <pre>{@code
- * CreateRecipeFinishedCallback.EVENT.register(ctx -> {
- *     if (ctx.getSource() == RecipeSource.MILLSTONE) { ... }
- * });
- * }</pre>
- *
- * <p>Fired on the server tick thread only, after the recipe has been applied.
- * Not cancellable.
- */
+// Fabric callback fired whenever a Create (or addon) recipe completes on the server.
+// Server side only, not cancellable.
 @FunctionalInterface
 public interface CreateRecipeFinishedCallback {
 

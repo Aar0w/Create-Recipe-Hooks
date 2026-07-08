@@ -13,24 +13,15 @@ import org.spongepowered.asm.mixin.Unique;
 
 import java.util.UUID;
 
-/**
- * Fabric port of the Forge {@code MixinCrushingWheelBlockEntity}: {@link ICrhOwnable}
- * UUID tracking on the player-placed wheel, used as the attribution fallback for
- * belt/hopper-fed crushing.
- *
- * <p>{@code CrushingWheelBlockEntity} does not declare {@code write}/{@code read}
- * (verified in Create Fabric 6.0.8.1 sources), so this mixin extends
- * {@link KineticBlockEntity} and merges real overrides into the target.
- *
- * <p>Owner capture on placement happens automatically via the {@code MixinBlockItem}
- * hook (instanceof {@link ICrhOwnable}); no per-block registration is needed on Fabric.
- */
+// Owner tracking for the Crushing Wheel block, used by MixinCrushingWheelController
+// as the attribution fallback for belt and hopper fed input. The wheel block entity does
+// not declare its own NBT methods, so overrides are merged in via the superclass.
 @Mixin(CrushingWheelBlockEntity.class)
 public abstract class MixinCrushingWheelBlockEntity extends KineticBlockEntity implements ICrhOwnable {
 
     @Unique private @Nullable UUID crh$ownerUUID = null;
 
-    // Never invoked — required only so javac accepts the superclass extension.
+    // Never invoked, required only so javac accepts the superclass extension.
     private MixinCrushingWheelBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }

@@ -15,11 +15,9 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-/**
- * Fabric port of the Forge {@code MixinSequencedAssemblyGetRecipe}: captures {@link Level}
- * from all SequencedAssemblyRecipe.getRecipe/getRecipes overloads for the final-step event.
- * Overload set verified identical in Create Fabric 6.0.8.1 (lines 62/67/73 + getRecipes).
- */
+// Captures the Level from every SequencedAssemblyRecipe.getRecipe overload
+// so MixinSequencedAssemblyRecipe can build the event context (the recipe class
+// itself has no Level reference at completion time).
 @Mixin(SequencedAssemblyRecipe.class)
 public abstract class MixinSequencedAssemblyGetRecipe {
 

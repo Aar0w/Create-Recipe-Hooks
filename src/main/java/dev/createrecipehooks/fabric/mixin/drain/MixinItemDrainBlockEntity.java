@@ -14,11 +14,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.UUID;
 
-/**
- * Fabric port of the Forge {@code MixinItemDrainBlockEntity}: {@link ICrhOwnable} UUID
- * tracking plus {@link CrhOwnerContext} coverage of {@code continueProcessing()}
- * (verified at line 235 of Create Fabric 6.0.8.1, drives GenericItemEmptying).
- */
+// Owner tracking for the Item Drain. The UUID is handed to
+// MixinGenericItemEmptying through CrhOwnerContext for the duration
+// of continueProcessing().
 @Mixin(ItemDrainBlockEntity.class)
 public abstract class MixinItemDrainBlockEntity implements ICrhOwnable {
 

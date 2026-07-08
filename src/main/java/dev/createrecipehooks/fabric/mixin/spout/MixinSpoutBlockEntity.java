@@ -17,11 +17,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.UUID;
 
-/**
- * Fabric port of the Forge {@code MixinSpoutBlockEntity}: {@link ICrhOwnable} UUID tracking
- * plus {@link CrhOwnerContext} coverage of {@code whenItemHeld} (the single caller of
- * {@code FillingBySpout.fillItem}, verified at line 120 of Create Fabric 6.0.8.1).
- */
+// Owner tracking for the Spout. The UUID is handed to MixinFillingBySpout
+// through CrhOwnerContext for the duration of whenItemHeld().
 @Mixin(SpoutBlockEntity.class)
 public abstract class MixinSpoutBlockEntity implements ICrhOwnable {
 

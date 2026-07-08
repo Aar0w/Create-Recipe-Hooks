@@ -4,21 +4,9 @@ import dev.createrecipehooks.api.BlockProcessedContext;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 
-/**
- * Fabric-side public event — the counterpart of the Forge {@code CreateBlockProcessedEvent}.
- * Fires once per block broken by a Mechanical Drill, per crop cut by a Mechanical
- * Harvester, and per lone (non-tree) block cut by a Mechanical Saw.
- *
- * <p>Usage from another mod:
- * <pre>{@code
- * CreateBlockProcessedCallback.EVENT.register(ctx -> {
- *     if (ctx.getSource() == RecipeSource.MECHANICAL_DRILL) { ... }
- * });
- * }</pre>
- *
- * <p>Fired on the server tick thread only, after the block is gone. Not cancellable.
- * Tree felling is a separate event: {@link CreateTreeCutCallback}.
- */
+// Fabric callback fired when a Drill breaks a block, a Harvester cuts a plant, or a Saw
+// cuts a lone block that is not part of a tree. Tree felling fires CreateTreeCutCallback
+// instead, never both. Server side only, not cancellable.
 @FunctionalInterface
 public interface CreateBlockProcessedCallback {
 

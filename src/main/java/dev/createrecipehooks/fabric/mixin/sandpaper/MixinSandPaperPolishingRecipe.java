@@ -17,18 +17,8 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import java.util.List;
 
-/**
- * Fabric port of the Forge {@code MixinSandPaperPolishingRecipe}.
- *
- * <p>The Forge version had to target {@code finishUsingItem} by its SRG name
- * ({@code m_5922_}); on Fabric the Mojmap name is used with remapping — the Loom refmap
- * resolves it to intermediary at runtime.
- *
- * <p>Verified against Create Fabric 6.0.8.1 (line 119): the single
- * {@code SandPaperPolishingRecipe.applyPolish(Level, Vec3, ItemStack, ItemStack)} call
- * inside {@code finishUsingItem} — same WrapOperation strategy as Forge (multiple RETURN
- * frames make @Local at RETURN unsafe; the wrap receives everything it needs).
- */
+// Fires the SAND_PAPER event when a player finishes polishing an item by hand.
+// This is the only source where getPlayer() is non-null.
 @Mixin(SandPaperItem.class)
 public abstract class MixinSandPaperPolishingRecipe {
 

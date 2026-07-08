@@ -12,11 +12,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
 
-/**
- * Fabric port of the Forge {@code MixinEncasedFanBlockEntity}: {@link ICrhOwnable}
- * UUID tracking persisted via Create's {@code write/read(CompoundTag, boolean)}
- * (verified in Create Fabric 6.0.8.1: write at line 51, read at line 44).
- */
+// Owner tracking for the Encased Fan: persists the placing player's UUID so
+// MixinAirCurrent can attribute FAN_* events.
 @Mixin(EncasedFanBlockEntity.class)
 public abstract class MixinEncasedFanBlockEntity implements ICrhOwnable {
 

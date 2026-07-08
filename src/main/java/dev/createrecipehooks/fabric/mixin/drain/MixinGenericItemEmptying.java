@@ -23,26 +23,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Fabric Item Drain hook — return-value based design.
- *
- * <h3>Why not @Local captures (the original Forge approach)</h3>
- * {@code emptyItem} has an early potion return (line 47, verified in Create Fabric 6.0.8.1
- * sources) that fires before the recipe {@code Optional} local is declared; a {@code @Local}
- * capture of it would abort the injection at transform time. Reading
- * {@code cir.getReturnValue()} instead is valid at every RETURN by definition and covers
- * all three paths uniformly:
- * <ul>
- *   <li>recipe path (EmptyingRecipe) — recipe attached via the rollResults WrapOperation</li>
- *   <li>capability path (buckets) — no recipe, fluid+item from the Pair</li>
- *   <li>potion path (PotionFluidHandler.emptyPotion) — fires events too, unlike the
- *       original local-based design</li>
- * </ul>
- *
- * <p>{@code catnip Pair} is compile-visible because Catnip is shaded into the
- * Ponder-Fabric jar (already a compileOnly dependency). Porting Lib FluidStack amounts
- * are droplets → converted to mB (÷81).
- */
+// Fires the ITEM_DRAIN_EMPTYING event when the drain empties a container, covering all
+// three paths: emptying recipes (with recipe id), fluid capability containers such as
+// buckets, and potions (both without a recipe id). Fluid amounts are converted from
+// droplets to millibuckets.
 @Mixin(GenericItemEmptying.class)
 public abstract class MixinGenericItemEmptying {
 

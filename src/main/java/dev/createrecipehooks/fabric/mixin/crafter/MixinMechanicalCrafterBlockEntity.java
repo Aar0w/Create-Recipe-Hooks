@@ -13,13 +13,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
 
-/**
- * Fabric port of the Forge {@code MixinMechanicalCrafterBlockEntity}.
- *
- * <p>Verified against Create Fabric 6.0.8.1: {@code tryToApplyRecipe} is called from
- * {@code tick()} (ASSEMBLING phase, line 270) — same call site as Forge 6.0.8, so the
- * INVOKE injection point ports unchanged.
- */
+// Owner tracking for the Mechanical Crafter. The output crafter's UUID is handed to
+// MixinRecipeGridHandler through CrhOwnerContext around the
+// tryToApplyRecipe call in tick().
 @Mixin(MechanicalCrafterBlockEntity.class)
 public abstract class MixinMechanicalCrafterBlockEntity implements ICrhOwnable {
 

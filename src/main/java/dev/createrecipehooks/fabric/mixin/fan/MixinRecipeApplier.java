@@ -19,17 +19,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Fabric port of the Forge {@code MixinRecipeApplier} — the central RecipeApplier hook
- * (Fan processing, Press, SandPaper-on-belt, UNKNOWN fallback).
- *
- * <p>Signature verified against Create Fabric 6.0.8.1 sources:
- * {@code applyRecipeOn(Level, ItemStack, Recipe<?>, boolean)} — identical to Forge.
- *
- * <p>Unlike the Forge version there is no {@code remap = false}: on Fabric the Loom-generated
- * refmap remaps the Minecraft types in the descriptor to intermediary while the Create method
- * name passes through unchanged.
- */
+// Shared hook on RecipeApplier.applyRecipeOn: fires FAN_* events (all four fan
+// processing types), MECHANICAL_PRESS and SAND_PAPER via the belt path, and UNKNOWN for
+// unrecognized addon recipes. Deployer types are excluded here and handled by
+// dev.createrecipehooks.fabric.mixin.deployer.MixinBeltDeployerCallbacks.
 @Mixin(RecipeApplier.class)
 public abstract class MixinRecipeApplier {
 
@@ -54,7 +47,7 @@ public abstract class MixinRecipeApplier {
         for (ItemStack out : outputs) {
             if (!out.isEmpty()
                     && out.hasTag() && out.getOrCreateTag().contains("SequencedAssembly")) {
-                return; // intermediate SA step — skip
+                return; // intermediate SA step, skip
             }
         }
 

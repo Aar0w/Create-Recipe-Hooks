@@ -22,20 +22,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * Fabric port of the Forge {@code MixinBasinRecipe}.
- *
- * <h3>Differences from Forge (verified against Create Fabric 6.0.8.1 sources)</h3>
- * <ul>
- *   <li>{@code acceptOutputs} takes a Fabric Transfer API {@link TransactionContext}
- *       instead of {@code boolean simulate}, and Porting Lib {@link FluidStack}s.</li>
- *   <li>{@code apply(basin, recipe, test)} calls {@code acceptOutputs} exactly once for
- *       both the match-check ({@code test=true}) and the real pass; the real pass commits
- *       the transaction afterwards. We fire only when {@code accepted && !test}.</li>
- *   <li>Fluid amounts are in droplets (81000 = 1 bucket); converted to millibuckets
- *       for {@link FluidAmount} by dividing by 81.</li>
- * </ul>
- */
+// Fires the BASIN event when a basin recipe commits its outputs (Mixer, Compactor,
+// pressing on a Basin, and addons that go through BasinRecipe.apply).
+// Fluid amounts are converted from droplets to millibuckets.
 @Mixin(BasinRecipe.class)
 public abstract class MixinBasinRecipe {
 

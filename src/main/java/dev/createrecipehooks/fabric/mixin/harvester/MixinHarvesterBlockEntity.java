@@ -14,19 +14,15 @@ import org.spongepowered.asm.mixin.Unique;
 
 import java.util.UUID;
 
-/**
- * Fabric port of the Forge {@code MixinHarvesterBlockEntity}: owner tracking through the
- * vanilla {@code saveAdditional}/{@code load} pair via the mixin-extends pattern
- * ({@code HarvesterBlockEntity} is render-only and declares no NBT methods of its own).
- * Contraption assembly serializes the BE with {@code saveWithFullMetadata()}, so the
- * UUID travels in {@code MovementContext.blockEntityData}.
- */
+// Owner tracking for the Mechanical Harvester, persisted through the vanilla NBT pair
+// so the UUID travels inside assembled contraptions and is read back by
+// MixinHarvesterMovementBehaviour.
 @Mixin(HarvesterBlockEntity.class)
 public abstract class MixinHarvesterBlockEntity extends CachedRenderBBBlockEntity implements ICrhOwnable {
 
     @Unique private @Nullable UUID crh$ownerUUID = null;
 
-    // Never invoked — required only so javac accepts the superclass extension.
+    // Never invoked, required only so javac accepts the superclass extension.
     private MixinHarvesterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }

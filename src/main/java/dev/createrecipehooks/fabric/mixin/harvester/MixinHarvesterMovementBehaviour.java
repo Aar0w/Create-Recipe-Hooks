@@ -16,12 +16,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
 
-/**
- * Fabric port of the Forge {@code MixinHarvesterMovementBehaviour}. Verified against
- * Create Fabric 6.0.8.1 sources: {@code visitNewPosition} calls
- * {@code BlockHelper.destroyBlockAs} with the same 6-argument signature as Forge; the
- * block is still intact at the invoke point, so its state is re-read from the world.
- */
+// Mechanical Harvester (contraption actor): fires a blockProcessed event once per
+// harvested plant, after all of Create's validity checks have passed.
 @Mixin(HarvesterMovementBehaviour.class)
 public class MixinHarvesterMovementBehaviour {
 

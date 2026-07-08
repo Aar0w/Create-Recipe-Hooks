@@ -15,11 +15,8 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import java.util.List;
 
-/**
- * Fabric port of the Forge {@code MixinSequencedAssemblyRecipe}.
- * Verified against Create Fabric 6.0.8.1: {@code advance(ItemStack)} calls
- * {@code rollResult()} on the final step (line ~110) — identical to Forge.
- */
+// Fires the SEQUENCED_ASSEMBLY event when the final step of a sequenced assembly
+// produces the finished item. Intermediate steps do not fire events.
 @Mixin(SequencedAssemblyRecipe.class)
 public abstract class MixinSequencedAssemblyRecipe {
 

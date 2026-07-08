@@ -11,14 +11,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Fabric port of the Forge {@code MixinAirCurrent}: sets {@link CrhOwnerContext} for the
- * entire duration of {@code AirCurrent.tick()}, covering both fan processing modes
- * (world items via {@code tickAffectedEntities}, belt items via {@code tickAffectedHandlers}).
- *
- * <p>Verified against Create Fabric 6.0.8.1: {@code tick()} calls both methods at lines 75/76;
- * {@code public final IAirCurrentSource source} exists (line 47).
- */
+// Carries the Fan owner's UUID through CrhOwnerContext for the whole
+// AirCurrent.tick(), covering both fan modes (items on belts and items lying
+// in the air current) so MixinRecipeApplier can attribute FAN_* events.
 @Mixin(AirCurrent.class)
 public abstract class MixinAirCurrent {
 

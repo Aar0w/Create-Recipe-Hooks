@@ -17,11 +17,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
 
-/**
- * Fabric port of the Forge {@code MixinBeltDeployerCallbacks}. Signature verified against
- * Create Fabric 6.0.8.1 (line 110): {@code activate(TransportedItemStack,
- * TransportedItemStackHandlerBehaviour, DeployerBlockEntity, Recipe)} — identical.
- */
+// Fires the DEPLOYER_BELT event when a Deployer applies a recipe, attributed to the
+// Deployer's owner. Deployer recipe types are excluded from the shared RecipeApplier
+// hook so the event fires exactly once.
 @Mixin(BeltDeployerCallbacks.class)
 public abstract class MixinBeltDeployerCallbacks {
 

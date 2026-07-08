@@ -21,21 +21,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
 
-/**
- * Fabric port of the Forge {@code MixinDrillBlockEntity}: stationary Mechanical Drill
- * blockProcessed events plus owner tracking via the mixin-extends pattern
- * ({@code DrillBlockEntity} does not declare {@code write}/{@code read};
- * {@code BlockBreakingKineticBlockEntity} does — verified in Create Fabric 6.0.8.1 sources).
- *
- * <p>The HEAD hook on {@code onBlockBroken} covers both the normal drop path and the
- * cobblegen-optimised path that skips the super call.
- */
+// Stationary Mechanical Drill: fires a blockProcessed event once per broken block
+// (including the cobblegen-optimised path) and tracks the Drill's owner.
 @Mixin(DrillBlockEntity.class)
 public abstract class MixinDrillBlockEntity extends BlockBreakingKineticBlockEntity implements ICrhOwnable {
 
     @Unique private @Nullable UUID crh$ownerUUID = null;
 
-    // Never invoked — required only so javac accepts the superclass extension.
+    // Never invoked, required only so javac accepts the superclass extension.
     private MixinDrillBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }

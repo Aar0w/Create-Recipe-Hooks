@@ -26,17 +26,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Fabric port of the Forge {@code MixinCrushingWheelController}.
- *
- * <p>Verified against Create Fabric 6.0.8.1: {@code applyRecipe()} (line 294) declares
- * {@code Optional<ProcessingRecipe<Container>> recipe} (Optional ordinal 0) and
- * {@code List<ItemStack> list} (List ordinal 0) — identical locals to Forge.
- * {@code intakeItem(ItemEntity)} at line 268.
- *
- * <p>Thrower UUID: captured from {@code ItemEntity.getOwner()} (the controller is never
- * player-placed, so owner attribution is not possible).
- */
+// Fires the CRUSHING_WHEEL event when the wheels finish a recipe. Attribution:
+// whoever threw the item in, with a fallback to the owner of an adjacent wheel
+// for belt and hopper fed input.
 @Mixin(CrushingWheelControllerBlockEntity.class)
 public abstract class MixinCrushingWheelController {
 

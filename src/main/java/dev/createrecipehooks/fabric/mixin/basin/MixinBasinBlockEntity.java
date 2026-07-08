@@ -12,11 +12,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
 
-/**
- * Fabric port of the Forge {@code MixinBasinBlockEntity}: {@link ICrhOwnable} UUID tracking
- * persisted via Create's {@code write/read(CompoundTag, boolean)} (verified in Create
- * Fabric 6.0.8.1: write at line 230, read at line 204).
- */
+// Owner tracking for the Basin: persists the placing player's UUID in the block
+// entity NBT so BASIN events can be attributed.
 @Mixin(BasinBlockEntity.class)
 public abstract class MixinBasinBlockEntity implements ICrhOwnable {
 

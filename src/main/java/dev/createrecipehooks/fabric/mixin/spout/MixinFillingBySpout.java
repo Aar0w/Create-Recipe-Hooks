@@ -18,21 +18,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Fabric port of the Forge {@code MixinFillingBySpout} — both filling paths.
- *
- * <h3>Differences from Forge (verified against Create Fabric 6.0.8.1 sources)</h3>
- * <ul>
- *   <li>{@code fillItem(Level, long, ItemStack, FluidStack)} — the amount is a
- *       {@code long} in droplets, and FluidStack is Porting Lib's.</li>
- *   <li>Both paths confirmed present: {@code FillingRecipe.rollResults()} (recipe path)
- *       and the {@code GenericItemFilling.fillItem} fallback (capability path, buckets).</li>
- * </ul>
- */
+// Fires the SPOUT_FILLING event, covering both filling paths: FillingRecipe results
+// (with recipe id) and fluid capability containers such as buckets (recipe id null).
 @Mixin(FillingBySpout.class)
 public abstract class MixinFillingBySpout {
 
-    // ── Recipe path ───────────────────────────────────────────────────────────
+    // Recipe path.
 
     @WrapOperation(
         method = "fillItem(Lnet/minecraft/world/level/Level;" +
@@ -69,7 +60,7 @@ public abstract class MixinFillingBySpout {
         return results;
     }
 
-    // ── Capability path (buckets and other fluid containers; recipeId = null) ─
+    // Capability path: no FillingRecipe involved, dispatched with recipeId null.
 
     @WrapOperation(
         method = "fillItem(Lnet/minecraft/world/level/Level;" +

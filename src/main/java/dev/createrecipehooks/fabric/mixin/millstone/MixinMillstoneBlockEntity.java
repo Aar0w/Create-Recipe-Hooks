@@ -21,11 +21,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Fabric port of the Forge {@code MixinMillstoneBlockEntity}.
- * Verified against Create Fabric 6.0.8.1: {@code process()} calls
- * {@code lastRecipe.rollResults()} (no-arg) at line 153 — same target as Forge.
- */
+// Fires the MILLSTONE event when a milling recipe completes and tracks the
+// Millstone's owner for attribution.
 @Mixin(MillstoneBlockEntity.class)
 public abstract class MixinMillstoneBlockEntity implements ICrhOwnable {
 

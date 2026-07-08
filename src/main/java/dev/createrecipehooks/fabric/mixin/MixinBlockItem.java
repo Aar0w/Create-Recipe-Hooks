@@ -12,18 +12,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * Fabric replacement for Forge's {@code BlockEvent.EntityPlaceEvent} owner capture
- * (see the Forge project's {@code NeoForgeAdapter.onOwnableBlockPlaced}).
- *
- * <p>Fabric API provides no generic block-place event, so we inject at the tail of
- * {@link BlockItem#place(BlockPlaceContext)}: if the placement succeeded, the placer is a
- * server player, and the new block entity implements {@link ICrhOwnable} (added by the
- * CRH Create mixins), the player's UUID is recorded.
- *
- * <p>No per-block-type filter is needed: the {@code instanceof ICrhOwnable} check is
- * exactly the set of machines CRH tracks.
- */
+// Records the placing player's UUID on every CRH-tracked machine: when a block placement
+// succeeds and the new block entity implements ICrhOwnable, the placer is stored.
 @Mixin(BlockItem.class)
 public abstract class MixinBlockItem {
 
