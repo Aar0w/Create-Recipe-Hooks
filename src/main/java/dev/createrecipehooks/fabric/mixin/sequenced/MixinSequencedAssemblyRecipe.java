@@ -15,8 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import java.util.List;
 
-// Fires the SEQUENCED_ASSEMBLY event when the final step of a sequenced assembly
-// produces the finished item. Intermediate steps do not fire events.
+// Fires the SEQUENCED_ASSEMBLY event when the final step of a sequenced assembly produces the finished item. Intermediate steps do not fire events.
 @Mixin(SequencedAssemblyRecipe.class)
 public abstract class MixinSequencedAssemblyRecipe {
 

@@ -23,10 +23,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 import java.util.UUID;
 
-// Fires the ITEM_DRAIN_EMPTYING event when the drain empties a container, covering all
-// three paths: emptying recipes (with recipe id), fluid capability containers such as
-// buckets, and potions (both without a recipe id). Fluid amounts are converted from
-// droplets to millibuckets.
+// Fires the ITEM_DRAIN_EMPTYING event when the drain empties a container, covering all three paths: emptying recipes (with recipe id), fluid capability containers such as buckets, and potions (both without a recipe id).
+// Fluid amounts are converted from droplets to millibuckets.
 @Mixin(GenericItemEmptying.class)
 public abstract class MixinGenericItemEmptying {
 
@@ -101,7 +99,7 @@ public abstract class MixinGenericItemEmptying {
 
             ResourceLocation fluidKey = BuiltInRegistries.FLUID.getKey(resultingFluid.getFluid());
             if (fluidKey != null) {
-                // droplets → millibuckets (81 droplets = 1 mB)
+                // droplets to millibuckets (81 droplets = 1 mB)
                 builder.fluidOutputs(List.of(new FluidAmount(fluidKey, (int) (resultingFluid.getAmount() / 81))));
             }
 

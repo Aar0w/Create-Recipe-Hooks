@@ -12,8 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-// Records the placing player's UUID on every CRH-tracked machine: when a block placement
-// succeeds and the new block entity implements ICrhOwnable, the placer is stored.
+// Records the placing player's UUID on every CRH-tracked machine: when a block placement succeeds and the new block entity implements ICrhOwnable, the placer is stored.
 @Mixin(BlockItem.class)
 public abstract class MixinBlockItem {
 

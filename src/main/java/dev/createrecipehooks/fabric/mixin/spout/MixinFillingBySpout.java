@@ -18,8 +18,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import java.util.List;
 import java.util.UUID;
 
-// Fires the SPOUT_FILLING event, covering both filling paths: FillingRecipe results
-// (with recipe id) and fluid capability containers such as buckets (recipe id null).
+// Fires the SPOUT_FILLING event, covering both filling paths: FillingRecipe results (with recipe id) and fluid capability containers such as buckets (recipe id null).
 @Mixin(FillingBySpout.class)
 public abstract class MixinFillingBySpout {
 

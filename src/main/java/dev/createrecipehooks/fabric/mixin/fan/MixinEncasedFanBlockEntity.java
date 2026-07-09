@@ -12,8 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
 
-// Owner tracking for the Encased Fan: persists the placing player's UUID so
-// MixinAirCurrent can attribute FAN_* events.
+// Owner tracking for the Encased Fan: persists the placing player's UUID so MixinAirCurrent can attribute FAN_* events.
 @Mixin(EncasedFanBlockEntity.class)
 public abstract class MixinEncasedFanBlockEntity implements ICrhOwnable {
 

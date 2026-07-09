@@ -22,8 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Optional;
 import java.util.UUID;
 
-// Fires the MECHANICAL_CRAFTER event when a crafter chain produces its result,
-// covering both Create's mechanical crafting recipes and vanilla crafting.
+// Fires the MECHANICAL_CRAFTER event when a crafter chain produces its result, covering both Create's mechanical crafting recipes and vanilla crafting.
 @Mixin(RecipeGridHandler.class)
 public abstract class MixinRecipeGridHandler {
 

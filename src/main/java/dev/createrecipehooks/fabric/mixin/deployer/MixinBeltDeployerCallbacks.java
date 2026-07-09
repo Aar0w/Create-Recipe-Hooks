@@ -17,9 +17,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
 
-// Fires the DEPLOYER_BELT event when a Deployer applies a recipe, attributed to the
-// Deployer's owner. Deployer recipe types are excluded from the shared RecipeApplier
-// hook so the event fires exactly once.
+// Fires the DEPLOYER_BELT event when a Deployer applies a recipe, attributed to the Deployer's owner.
+// Deployer recipe types are excluded from the shared RecipeApplier hook so the event fires exactly once.
 @Mixin(BeltDeployerCallbacks.class)
 public abstract class MixinBeltDeployerCallbacks {
 

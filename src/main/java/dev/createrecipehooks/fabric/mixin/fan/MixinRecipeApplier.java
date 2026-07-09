@@ -19,10 +19,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 import java.util.UUID;
 
-// Shared hook on RecipeApplier.applyRecipeOn: fires FAN_* events (all four fan
-// processing types), MECHANICAL_PRESS and SAND_PAPER via the belt path, and UNKNOWN for
-// unrecognized addon recipes. Deployer types are excluded here and handled by
-// dev.createrecipehooks.fabric.mixin.deployer.MixinBeltDeployerCallbacks.
+// Shared hook on RecipeApplier.applyRecipeOn: fires FAN_* events (all four fan processing types), MECHANICAL_PRESS and SAND_PAPER via the belt path, and UNKNOWN for unrecognized addon recipes.
+// Deployer types are excluded here and handled by dev.createrecipehooks.fabric.mixin.deployer.MixinBeltDeployerCallbacks.
 @Mixin(RecipeApplier.class)
 public abstract class MixinRecipeApplier {
 

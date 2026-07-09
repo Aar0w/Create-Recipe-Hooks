@@ -22,8 +22,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import java.util.List;
 import java.util.Objects;
 
-// Fires the BASIN event when a basin recipe commits its outputs (Mixer, Compactor,
-// pressing on a Basin, and addons that go through BasinRecipe.apply).
+// Fires the BASIN event when a basin recipe commits its outputs (Mixer, Compactor, pressing on a Basin, and addons that go through BasinRecipe.apply).
 // Fluid amounts are converted from droplets to millibuckets.
 @Mixin(BasinRecipe.class)
 public abstract class MixinBasinRecipe {
@@ -57,7 +56,7 @@ public abstract class MixinBasinRecipe {
                 .filter(fs -> !fs.isEmpty())
                 .map(fs -> {
                     ResourceLocation key = BuiltInRegistries.FLUID.getKey(fs.getFluid());
-                    // droplets → millibuckets (81 droplets = 1 mB)
+                    // droplets to millibuckets (81 droplets = 1 mB)
                     return key != null ? new FluidAmount(key, (int) (fs.getAmount() / 81)) : null;
                 })
                 .filter(Objects::nonNull)

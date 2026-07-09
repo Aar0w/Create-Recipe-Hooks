@@ -12,8 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
 
-// Owner tracking for the Basin: persists the placing player's UUID in the block
-// entity NBT so BASIN events can be attributed.
+// Owner tracking for the Basin: persists the placing player's UUID in the block entity NBT so BASIN events can be attributed.
 @Mixin(BasinBlockEntity.class)
 public abstract class MixinBasinBlockEntity implements ICrhOwnable {
 

@@ -14,9 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.UUID;
 
-// Owner tracking for the Item Drain. The UUID is handed to
-// MixinGenericItemEmptying through CrhOwnerContext for the duration
-// of continueProcessing().
+// Owner tracking for the Item Drain. The UUID is handed to MixinGenericItemEmptying through CrhOwnerContext for the duration of continueProcessing().
 @Mixin(ItemDrainBlockEntity.class)
 public abstract class MixinItemDrainBlockEntity implements ICrhOwnable {
 

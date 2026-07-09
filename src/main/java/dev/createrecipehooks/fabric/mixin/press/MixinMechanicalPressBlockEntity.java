@@ -14,9 +14,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.UUID;
 
-// Owner tracking for the Mechanical Press. The UUID is carried through
-// CrhOwnerContext around both processing paths (belt and world) so the shared
-// RecipeApplier hook can attribute MECHANICAL_PRESS events.
+// Owner tracking for the Mechanical Press.
+// The UUID is carried through CrhOwnerContext around both processing paths (belt and world) so the shared RecipeApplier hook can attribute MECHANICAL_PRESS events.
 @Mixin(MechanicalPressBlockEntity.class)
 public abstract class MixinMechanicalPressBlockEntity implements ICrhOwnable {
 
