@@ -23,9 +23,8 @@ import plus.dragons.createenchantmentindustry.content.contraptions.enchanting.pr
 import java.util.List;
 import java.util.UUID;
 
-// Fires the CEI_PRINTER event when the Create Enchantment Industry Printer commits a
-// copy operation, and tracks the Printer's owner. Soft dependency: @Pseudo
-// skips this mixin silently when CEI is not installed.
+// Fires the CEI_PRINTER event when the Create Enchantment Industry Printer commits a copy operation, and tracks the Printer's owner.
+// Skipped silently when CEI is not installed.
 @Pseudo
 @Mixin(
     targets = "plus.dragons.createenchantmentindustry.content.contraptions.enchanting.printer.PrinterBlockEntity",

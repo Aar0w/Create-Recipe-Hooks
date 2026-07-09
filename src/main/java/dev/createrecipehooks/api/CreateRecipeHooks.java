@@ -4,9 +4,8 @@ import dev.createrecipehooks.core.RecipeEventDispatcher;
 import dev.createrecipehooks.core.RecipeHookRegistry;
 import org.jetbrains.annotations.NotNull;
 
-// Primary entry point of the library. Register listeners once in your mod initializer,
-// for example CreateRecipeHooks.register(ctx -> ...). Listeners are invoked on the
-// server tick thread.
+// Primary entry point of the library.
+// Register listeners once in your mod initializer, for example CreateRecipeHooks.register(ctx -> ...). Listeners are invoked on the server tick thread.
 public final class CreateRecipeHooks {
 
     private CreateRecipeHooks() {}

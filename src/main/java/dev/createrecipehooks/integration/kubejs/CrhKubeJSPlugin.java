@@ -9,9 +9,8 @@ import dev.latvian.mods.kubejs.event.EventHandler;
 import dev.latvian.mods.kubejs.event.Extra;
 import dev.latvian.mods.kubejs.script.ScriptType;
 
-// KubeJS integration, registers the CRHEvents group (recipeFinished, blockProcessed,
-// treeCut). Loaded only by KubeJS via kubejs.plugins.txt, so the dependency stays
-// optional; never reference this class from anywhere else in the mod.
+// KubeJS integration, registers the CRHEvents group (recipeFinished, blockProcessed, treeCut).
+// Loaded only by KubeJS via kubejs.plugins.txt, so the dependency stays optional; never reference this class from anywhere else in the mod.
 public class CrhKubeJSPlugin extends KubeJSPlugin {
 
     public static final EventGroup GROUP = EventGroup.of("CRHEvents");
@@ -39,7 +38,7 @@ public class CrhKubeJSPlugin extends KubeJSPlugin {
 
     @Override
     public void init() {
-        // Bridge: CRH dispatcher → KubeJS. Registered only when KubeJS loads this plugin.
+        // Bridge: CRH dispatcher to KubeJS. Registered only when KubeJS loads this plugin.
         CreateRecipeHooks.register(CrhKubeJSPlugin::postRecipeFinished);
         CreateRecipeHooks.registerBlockProcessed(CrhKubeJSPlugin::postBlockProcessed);
         CreateRecipeHooks.registerTreeCut(CrhKubeJSPlugin::postTreeCut);

@@ -5,8 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-// One fluid output: the fluid's registry key (e.g. minecraft:water) and the amount in
-// milli-buckets. Keeps the common API free of a platform FluidStack dependency.
+// One fluid output: the fluid's registry key (for example minecraft:water) and the amount in milli-buckets. Keeps the common API free of a platform FluidStack dependency.
 public record FluidAmount(@NotNull ResourceLocation fluid, int amount) {
 
     public FluidAmount {

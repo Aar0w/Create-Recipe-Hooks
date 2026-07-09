@@ -16,8 +16,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Map;
 
-// Forge event fired whenever a Create (or addon) recipe completes. Posted on the Forge
-// event bus (the game bus, not the mod bus), server side only, not cancellable.
+// Forge event fired whenever a Create (or addon) recipe completes.
+// Posted on the Forge event bus (the game bus, not the mod bus), server side only.
 public final class CreateRecipeFinishedEvent extends Event {
 
     private final RecipeFinishedContext context;

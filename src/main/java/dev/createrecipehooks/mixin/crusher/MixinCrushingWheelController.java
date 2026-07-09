@@ -26,9 +26,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-// Fires the CRUSHING_WHEEL event when the wheels finish a recipe. Attribution:
-// whoever threw the item in, with a fallback to the owner of an adjacent wheel
-// for belt and hopper fed input.
+// Fires the CRUSHING_WHEEL event when the wheels finish a recipe.
+// Attribution: whoever threw the item in, with a fallback to the owner of an adjacent wheel for belt and hopper fed input.
 @Mixin(value = CrushingWheelControllerBlockEntity.class, remap = false)
 public abstract class MixinCrushingWheelController {
 

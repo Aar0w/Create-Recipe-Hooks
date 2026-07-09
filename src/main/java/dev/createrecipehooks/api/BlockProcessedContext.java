@@ -13,10 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-// Snapshot of data for a Create machine processing a world block: the Drill breaking
-// a block, the Harvester cutting a plant, the Saw cutting a lone block (blockProcessed
-// events) or felling a whole tree (treeCut events). No recipe is involved, so unlike
-// RecipeFinishedContext there is no recipe id and no item outputs.
+// Create machine processing a world block: the Drill breaking a block, the Harvester cutting a plant, the Saw cutting a lone block (blockProcessed events) or felling a whole tree (treeCut events).
+// There is no recipe id and no item outputs.
 public final class BlockProcessedContext {
 
     private final RecipeSource        source;

@@ -59,7 +59,7 @@ public final class CrhDebugLogger {
             ctx.updateLoggers();
 
             fileLogger = ctx.getLogger(LOGGER_NAME);
-            CreateRecipeHooksMod.LOGGER.info("[CRH] Event log → {}", LOG_FILE);
+            CreateRecipeHooksMod.LOGGER.info("[CRH] Event log: {}", LOG_FILE);
         } catch (Exception e) {
             CreateRecipeHooksMod.LOGGER.error("[CRH] Failed to init event file logger", e);
         }

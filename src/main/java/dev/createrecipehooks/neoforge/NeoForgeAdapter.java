@@ -24,8 +24,7 @@ import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
-// Forge adapter: bridges the dispatcher to the Forge event bus and records machine
-// owners on block placement.
+// Forge adapter: bridges the dispatcher to the Forge event bus and records machine owners on block placement.
 public final class NeoForgeAdapter implements IRecipeFinishedListener {
 
     public static final NeoForgeAdapter INSTANCE = new NeoForgeAdapter();

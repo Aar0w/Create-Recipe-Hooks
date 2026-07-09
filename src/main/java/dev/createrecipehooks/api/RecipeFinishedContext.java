@@ -16,10 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-// Snapshot of data available at the moment a Create recipe completed. Source, level and
-// timestamp are always present; everything else is optional, check for null or empty
-// list before use. Read live objects (level, player, item stacks) only on the server
-// tick thread and treat the stacks as read-only.
+// Snapshot of data available at the moment a Create recipe completed. Source, level and timestamp are always present; everything else is optional, check for null or empty list before use.
+// Read live objects (level, player, item stacks) only on the server tick thread and treat the stacks as read-only.
 public final class RecipeFinishedContext {
 
     private final RecipeSource           source;
@@ -60,12 +58,10 @@ public final class RecipeFinishedContext {
     @NotNull
     public Level getLevel() { return level; }
 
-    // System.nanoTime() at the moment of the event. Not a wall-clock time,
-    // subtract two timestamps to get nanosecond durations.
+    // System.nanoTime() at the moment of the event. Not a wall-clock time, subtract two timestamps to get nanosecond durations.
     public long getTimestamp() { return timestamp; }
 
-    // Block position of the machine. Null for Fan processing (item in the world),
-    // belt Deployer and Sand Paper.
+    // Block position of the machine. Null for Fan processing (item in the world), belt Deployer and Sand Paper.
     @Nullable
     public BlockPos getBlockPos() { return blockPos; }
 
@@ -74,8 +70,7 @@ public final class RecipeFinishedContext {
     @Nullable
     public ResourceLocation getRecipeId() { return recipeId; }
 
-    // The recipe object. May be null even when getRecipeId() is present, for example
-    // vanilla crafting in the Mechanical Crafter stores only the id.
+    // The recipe object. May be null even when getRecipeId() is present, for example vanilla crafting in the Mechanical Crafter stores only the id.
     @Nullable
     public Recipe<?> getRecipe() { return recipe; }
 
@@ -89,13 +84,12 @@ public final class RecipeFinishedContext {
     @NotNull
     public List<ItemStack> getItemOutputs() { return itemOutputs; }
 
-    // Item stacks consumed as inputs (available for Fan, Sequenced Assembly, Spout,
-    // Item Drain). Never null, may be empty. Treat the stacks as read-only.
+    // Item stacks consumed as inputs (available for Fan, Sequenced Assembly, Spout, Item Drain). 
+    // Never null, may be empty. Treat the stacks as read-only.
     @NotNull
     public List<ItemStack> getItemInputs() { return itemInputs; }
 
-    // Fluid outputs in milli-buckets (Basin, Item Drain). Never null, empty for
-    // most machines.
+    // Fluid outputs in milli-buckets (Basin, Item Drain). Never null, empty for most machines.
     @NotNull
     public List<FluidAmount> getFluidOutputs() { return fluidOutputs; }
 

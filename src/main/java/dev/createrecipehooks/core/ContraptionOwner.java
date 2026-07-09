@@ -5,8 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-// Reads the owner UUID from a contraption actor's saved block entity NBT, so
-// attribution keeps working while the machine is moving.
+// Reads the owner UUID from a contraption actor's saved block entity NBT, so attribution keeps working while the machine is moving.
 public final class ContraptionOwner {
 
     // NBT key written by all ICrhOwnable mixins.

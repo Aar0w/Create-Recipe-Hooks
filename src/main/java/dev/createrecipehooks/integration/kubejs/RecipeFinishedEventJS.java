@@ -14,8 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-// Script-facing wrapper for CRHEvents.recipeFinished. Not cancellable, the recipe has
-// already been applied when this fires.
+// Script-facing wrapper for CRHEvents.recipeFinished. Not cancellable, the recipe has already been applied when this fires.
 public class RecipeFinishedEventJS extends EventJS {
 
     public static final String OWNER_UUID_KEY = "createrecipehooks:owner_uuid";

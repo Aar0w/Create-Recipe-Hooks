@@ -12,9 +12,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-// Forge event fired when a Mechanical Saw fells a whole tree: one event per tree, with
-// log and leaf counts. Lone blocks fire CreateBlockProcessedEvent instead, never both.
-// Posted on the Forge event bus, server side only, not cancellable.
+// Forge event fired when a Mechanical Saw fells a whole tree: one event per tree, with log and leaf counts.
+// Lone blocks fire CreateBlockProcessedEvent instead.
+// Posted on the Forge event bus, server side only.
 public final class CreateTreeCutEvent extends Event {
 
     private final BlockProcessedContext context;

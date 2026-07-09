@@ -21,14 +21,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
 
-// Stationary Mechanical Drill: fires a blockProcessed event once per broken block
-// (including the cobblegen-optimised path) and tracks the Drill's owner.
+// Stationary Mechanical Drill: fires a blockProcessed event once per broken block (including the cobblegen-optimised path) and tracks the Drill's owner.
 @Mixin(value = DrillBlockEntity.class, remap = false)
 public abstract class MixinDrillBlockEntity extends BlockBreakingKineticBlockEntity implements ICrhOwnable {
 
     @Unique private @Nullable UUID crh$ownerUUID = null;
 
-    // Never invoked, required only so javac accepts the superclass extension.
     private MixinDrillBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }

@@ -31,9 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-// Mechanical Saw hooks: fires MECHANICAL_SAW recipe events for the upward-facing saw,
-// treeCut and blockProcessed events for the horizontal world-cutting saw, and tracks
-// the Saw's owner for attribution.
+// Mechanical Saw hooks: fires MECHANICAL_SAW recipe events for the upward-facing saw, treeCut and blockProcessed events for the horizontal world-cutting saw, and tracks the Saw's owner for attribution.
 @Mixin(value = SawBlockEntity.class, remap = false)
 public abstract class MixinSawBlockEntity implements ICrhOwnable {
 

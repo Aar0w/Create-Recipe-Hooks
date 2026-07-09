@@ -12,8 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 import java.util.UUID;
 
-// Script-facing wrapper for CRHEvents.blockProcessed. Not cancellable, the block is
-// already gone when this fires.
+// Script-facing wrapper for CRHEvents.blockProcessed. Not cancellable, the block is already gone when this fires.
 public class BlockProcessedEventJS extends EventJS {
 
     public static final String OWNER_UUID_KEY = "createrecipehooks:owner_uuid";

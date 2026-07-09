@@ -10,8 +10,8 @@ import org.apache.logging.log4j.Logger;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-// Central dispatcher: all mixin hooks post their events through this class. Dispatch is
-// synchronous on the server tick thread; listener exceptions are caught and logged.
+// Central dispatcher: all mixin hooks post their events through this class.
+// Dispatch is synchronous on the server tick thread; listener exceptions are caught and logged.
 // Internal, addon authors should use CreateRecipeHooks instead.
 public final class RecipeEventDispatcher {
 

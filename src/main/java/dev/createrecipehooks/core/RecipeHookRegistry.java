@@ -8,9 +8,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-// Registry for IHookProvider registrations, keyed by provider id (duplicates are
-// rejected with a warning). Internal, addon authors should go through
-// CreateRecipeHooks.registerProvider.
+// Registry for IHookProvider registrations, keyed by provider id (duplicates are rejected with a warning).
+// Internal, addon authors should go through CreateRecipeHooks.registerProvider.
 public final class RecipeHookRegistry implements IRegistrar {
 
     public static final RecipeHookRegistry INSTANCE = new RecipeHookRegistry();

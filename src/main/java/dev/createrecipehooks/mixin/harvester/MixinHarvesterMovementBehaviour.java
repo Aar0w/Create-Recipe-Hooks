@@ -16,8 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
 
-// Mechanical Harvester (contraption actor): fires a blockProcessed event once per
-// harvested plant, after all of Create's validity checks have passed.
+// Mechanical Harvester (contraption): fires a blockProcessed event once per harvested plant, after all of Create's validity checks have passed.
 @Mixin(value = HarvesterMovementBehaviour.class, remap = false)
 public class MixinHarvesterMovementBehaviour {
 

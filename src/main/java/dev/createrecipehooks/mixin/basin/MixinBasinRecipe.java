@@ -21,8 +21,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import java.util.List;
 import java.util.Objects;
 
-// Fires the BASIN event when a basin recipe commits its outputs (Mixer, Compactor,
-// pressing on a Basin, and addons that go through BasinRecipe.apply).
+// Fires the BASIN event when a basin recipe commits its outputs (Mixer, Compactor, pressing on a Basin, and addons that go through BasinRecipe.apply).
 @Mixin(value = BasinRecipe.class, remap = false)
 public abstract class MixinBasinRecipe {
 
