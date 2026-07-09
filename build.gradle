@@ -68,25 +68,6 @@ repositories {
     mavenCentral()
 }
 
-// Shared platform-agnostic sources from the Forge project.
-// Only api/, core/ and internal/ are pulled in; the Forge adapter, the Forge mixins
-// and the KubeJS integration (Forge-flavoured KubeJS) stay out.
-// NOTE: include/exclude patterns apply to the union of all srcDirs, so the local
-// fabric sources must also be matched by an include pattern below.
-sourceSets.main.java {
-    srcDir '../1.20.1/src/main/java'
-    include 'dev/createrecipehooks/api/**'
-    include 'dev/createrecipehooks/core/**'
-    include 'dev/createrecipehooks/internal/**'
-    exclude 'dev/createrecipehooks/internal/debug/**'
-    // KubeJS integration is shared too: it only uses KubeJS *common* API,
-    // which is identical between kubejs-forge and kubejs-fabric.
-    include 'dev/createrecipehooks/integration/**'
-    // All Fabric-local code, including Fabric mixins (dev.createrecipehooks.fabric.mixin),
-    // lives under fabric/** so it never collides with the Forge project's mixin/ package.
-    include 'dev/createrecipehooks/fabric/**'
-}
-
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     // Mojmap: matches the Forge project sources AND Create Fabric (built with Mojmap+Parchment)

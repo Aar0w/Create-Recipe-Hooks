@@ -4,18 +4,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-/**
- * ThreadLocal carrier for the UUID of the player who owns the machine currently
- * executing a recipe. Set by each machine's BlockEntity mixin before calling into
- * the shared utility class (RecipeApplier, FillingBySpout, etc.), and cleared on return.
- *
- * <p>The utility-class mixins (MixinRecipeApplier, MixinFillingBySpout, etc.) read
- * this value when building the {@link dev.createrecipehooks.api.RecipeFinishedContext}
- * and add it as metadata under key {@code "createrecipehooks:owner_uuid"}.
- *
- * <p>Thread safety: ThreadLocal — each server thread has its own value. No cross-thread
- * sharing; Create always dispatches machine ticks on the server tick thread.
- */
+// ThreadLocal carrier for the owner UUID of the machine currently processing.
+// Machine block entity mixins set it before calling into Create's shared utility classes, the utility-class mixins read it when building the event, and it is cleared on return.
 public final class CrhOwnerContext {
 
     private static final ThreadLocal<UUID> CURRENT = new ThreadLocal<>();

@@ -1,285 +1,87 @@
 package dev.createrecipehooks.api;
 
-/**
- * Identifies which Create machine or mechanic produced a completed recipe.
- *
- * <p>Sources prefixed with a mod name (e.g. {@code CEI_}, {@code POWERGRID_}) are
- * only fired when that addon is present. Core Create sources are always available.
- *
- * <p>This enum is part of the stable public API and will not have entries removed
- * between minor versions. New entries may be added in minor versions.
- *
- * <h3>Source classification</h3>
- * <p>Each entry in this enum falls into one of four categories:
- * <ul>
- *   <li><strong>FACTUAL ORIGIN</strong> — unambiguously identifies a single physical machine
- *       or player action. Example: {@link #MILLSTONE} always means the Millstone block.</li>
- *   <li><strong>TAXONOMY LABEL</strong> — categorizes by recipe type or shared code path,
- *       but may cover multiple machines. Example: {@link #BASIN} fires for the Mixer,
- *       Compactor, Basin-Pressing, and any addon machine using {@code BasinRecipe.apply()}.
- *       Example: {@link #FAN_BLASTING} covers both smelting and blasting recipe types.</li>
- *   <li><strong>RESERVED</strong> — entry exists in the API but no mixin fires it yet.
- *       Filtering on a RESERVED source will never match any event in v1.</li>
- *   <li><strong>UNREACHABLE (v1)</strong> — entry exists in the API but is structurally
- *       unreachable: no code path in v1 produces this value. These entries are placeholders
- *       for distinctions that were intended but not yet implemented. Will be unreachable
- *       until a dedicated mixin or hook is added.</li>
- * </ul>
- * <p>Classification is documented per-entry in the javadoc tag line.
- */
+// Which machine produced the event. Entries are never removed, new ones may be added;
+// reserved entries fire nothing yet.
 public enum RecipeSource {
 
-    // ------------------------------------------------------------------ //
-    //  Create — Basin stack                                                //
-    //  BasinRecipe.apply() → covers Mixer, Compactor, Basin-Pressing,     //
-    //  and any addon machine that calls BasinRecipe.apply().              //
-    // ------------------------------------------------------------------ //
-
-    /**
-     * Mixing, compacting, and basin-pressing recipes — <strong>TAXONOMY LABEL</strong>.
-     *
-     * <p>Fired by {@code BasinRecipe.apply()}, which is shared by:
-     * <ul>
-     *   <li>Mechanical Mixer (mixing recipes, potion mixing)</li>
-     *   <li>Mechanical Compactor (compacting recipes)</li>
-     *   <li>Basin with Mechanical Press (pressing recipes applied to basin contents)</li>
-     *   <li>Any addon machine that delegates to {@code BasinRecipe.apply()},
-     *       e.g. CEI Infuser, PowerGrid machines (events arrive here, not as their own source)</li>
-     * </ul>
-     * <p>Use {@link RecipeFinishedContext#getRecipe()} to distinguish sub-types by recipe class.
-     */
+    // Basin recipes: Mixer, Compactor, pressing on a Basin, and any addon machine that goes through BasinRecipe.apply() (for example the CEI Infuser).
     BASIN,
 
-    // ------------------------------------------------------------------ //
-    //  Create — Individual machines                                        //
-    // ------------------------------------------------------------------ //
-
-    /** Mechanical Press in belt/world mode (non-basin pressing) — <strong>FACTUAL ORIGIN</strong>. */
+    // Mechanical Press in belt and world modes (non-basin pressing).
     MECHANICAL_PRESS,
 
-    /** Millstone (milling recipes) — <strong>FACTUAL ORIGIN</strong>. */
+    // Millstone milling recipes.
     MILLSTONE,
 
-    /** Crushing Wheel (crushing and milling recipes) — <strong>FACTUAL ORIGIN</strong>. */
+    // Crushing Wheels crushing recipes.
     CRUSHING_WHEEL,
 
-    /**
-     * Mechanical Saw — <strong>FACTUAL ORIGIN</strong>.
-     *
-     * <p>Used by two distinct event families:
-     * <ul>
-     *   <li><strong>recipeFinished</strong> — cutting, stonecutting, sequenced cutting
-     *       recipes processed by an upward-facing Saw.</li>
-     *   <li><strong>blockProcessed / treeCut</strong> — a horizontal Saw (stationary or
-     *       contraption actor) cutting world blocks: treeCut when the block is part of
-     *       a tree, blockProcessed when it is a lone block.</li>
-     * </ul>
-     */
+    // Mechanical Saw. Used by two event families: recipeFinished for the upward-facing saw's cutting and stonecutting recipes, blockProcessed and treeCut for the horizontal world-cutting saw.
     MECHANICAL_SAW,
 
-    /**
-     * Mechanical Drill — <strong>FACTUAL ORIGIN, blockProcessed events only</strong>.
-     *
-     * <p>Fired once per block broken by a Drill, both stationary and as a contraption
-     * actor ({@link BlockProcessedContext#isContraption()} distinguishes the two).
-     * Never carried by recipeFinished events: the Drill does not process recipes.
-     */
-    MECHANICAL_DRILL,
-
-    /**
-     * Mechanical Harvester — <strong>FACTUAL ORIGIN, blockProcessed events only</strong>.
-     *
-     * <p>Fired once per crop, plant, or leaf block harvested by a Harvester contraption
-     * actor. The Harvester only operates on contraptions, so
-     * {@link BlockProcessedContext#isContraption()} is always {@code true}.
-     * Never carried by recipeFinished events.
-     */
-    MECHANICAL_HARVESTER,
-
-    /** Mechanical Crafter (Create crafting + vanilla crafting if enabled) — <strong>FACTUAL ORIGIN</strong>. */
+    // Mechanical Crafter results, both Create's mechanical crafting and vanilla crafting.
     MECHANICAL_CRAFTER,
 
-    // ------------------------------------------------------------------ //
-    //  Create — Deployer family                                            //
-    // ------------------------------------------------------------------ //
-
-    /**
-     * Deployer applying a recipe to a belt item — <strong>TAXONOMY LABEL</strong>.
-     *
-     * <p>Covers {@code DeployingRecipe} and {@code ItemApplicationRecipe} types processed
-     * via {@code RecipeApplier}. Both automated Deployer use and manual player
-     * item-application (when using the same recipe types) map to this source.
-     *
-     * <p><strong>player is {@code null} in v1.</strong> The Deployer's
-     * {@code DeployerFakePlayer} is not captured by the current mixin hook.
-     * Always check {@link RecipeFinishedContext#getPlayer()} for {@code null}.
-     */
+    // Deployer applying a recipe (deploying and item-application recipe types).
+    // getPlayer() is null; attribution comes from the Deployer's owner metadata.
     DEPLOYER_BELT,
 
-    /**
-     * Deployer in direct/world mode — <strong>UNREACHABLE in v1</strong>.
-     *
-     * <p>This entry is a placeholder for a planned distinction between belt-mode and
-     * direct-world-mode Deployer use. The current {@code resolveSource()} implementation
-     * in {@code MixinRecipeApplier} maps all Deployer processing to {@link #DEPLOYER_BELT}.
-     * No event will ever carry this source value until a dedicated code path is added.
-     *
-     * @deprecated Not fired in v1. Do not filter on this value.
-     */
+    // RESERVED, no events fired: all Deployer processing currently arrives as DEPLOYER_BELT.
     DEPLOYER_DIRECT,
 
-    /**
-     * Player manual item application — <strong>UNREACHABLE in v1</strong>.
-     *
-     * <p>This entry was intended for player-initiated {@code ItemApplicationRecipe} use
-     * (right-clicking with a matching item). In the current implementation,
-     * {@code ItemApplicationRecipe} type is mapped to {@link #DEPLOYER_BELT} by
-     * {@code resolveSource()} in {@code MixinRecipeApplier}, regardless of whether
-     * a player or a Deployer triggered it.
-     * No event will ever carry this source value until a dedicated hook is added.
-     *
-     * @deprecated Not fired in v1. Do not filter on this value.
-     */
+    // RESERVED, no events fired: manual item application currently arrives as DEPLOYER_BELT.
     MANUAL_APPLICATION,
 
-    /**
-     * Sand Paper polishing — <strong>FACTUAL ORIGIN</strong>.
-     *
-     * <p>Fired from two code paths:
-     * <ul>
-     *   <li>Direct player use ({@code SandPaperItem.finishUsingItem}) —
-     *       {@link RecipeFinishedContext#getPlayer()} returns the real {@code ServerPlayer}.</li>
-     *   <li>Deployer belt use (via {@code RecipeApplier}, same as {@link #DEPLOYER_BELT}) —
-     *       {@link RecipeFinishedContext#getPlayer()} is {@code null}.</li>
-     * </ul>
-     * <p>Always check {@link RecipeFinishedContext#getPlayer()} for {@code null} before use.
-     */
+    // Sand Paper polishing. On manual use getPlayer() returns the real player;
+    // on belt use (via Deployer) it is null.
     SAND_PAPER,
 
-    // ------------------------------------------------------------------ //
-    //  Create — Sequenced Assembly                                         //
-    // ------------------------------------------------------------------ //
-
-    /**
-     * Sequenced Assembly final step — <strong>FACTUAL ORIGIN</strong>.
-     *
-     * <p>Fired once when the <em>final</em> step of a Sequenced Assembly completes and
-     * the assembled item is produced. Intermediate steps (transitional items) do not fire
-     * this event.
-     */
+    // Final step of a Sequenced Assembly producing the finished item.
+    // Intermediate steps do not fire events.
     SEQUENCED_ASSEMBLY,
 
-    // ------------------------------------------------------------------ //
-    //  Create — Fan processing                                             //
-    // ------------------------------------------------------------------ //
-
-    /** Fan Haunting (haunting recipes) — <strong>TAXONOMY LABEL</strong> (recipe type). */
+    // Fan with soul fire (haunting recipes).
     FAN_HAUNTING,
 
-    /** Fan Splashing (splashing recipes) — <strong>TAXONOMY LABEL</strong> (recipe type). */
+    // Fan with water (splashing recipes).
     FAN_SPLASHING,
 
-    /**
-     * Fan Blasting — <strong>TAXONOMY LABEL</strong> (recipe type).
-     *
-     * <p>Covers both vanilla {@code SmeltingRecipe} and {@code BlastingRecipe} processed
-     * by any Fan with a heat source (lava, blaze burner). Use
-     * {@link RecipeFinishedContext#getRecipe()} to distinguish the two recipe types.
-     */
+    // Fan with lava or blaze burner. Covers both vanilla smelting and blasting recipe types;
+    // use RecipeFinishedContext#getRecipe() to distinguish them.
     FAN_BLASTING,
 
-    /**
-     * Fan Smoking — <strong>TAXONOMY LABEL</strong> (recipe type).
-     *
-     * <p>The underlying recipe is always vanilla {@code SmokingRecipe}.
-     */
+    // Fan with fire (vanilla smoking recipes).
     FAN_SMOKING,
 
-    // ------------------------------------------------------------------ //
-    //  Create — Fluid machines                                             //
-    // ------------------------------------------------------------------ //
-
-    /** Spout filling an item (FillingBySpout / FillingRecipe) — <strong>FACTUAL ORIGIN</strong>. */
+    // Spout filling an item. getRecipeId() is null when filling goes through the fluid capability instead of a FillingRecipe (buckets and similar containers).
     SPOUT_FILLING,
 
-    /** Item Drain emptying a fluid container (EmptyingRecipe or fluid capability) — <strong>FACTUAL ORIGIN</strong>. */
+    // Item Drain emptying a container. getRecipeId() is null for capability emptying (buckets) and potions.
     ITEM_DRAIN_EMPTYING,
 
-    // ------------------------------------------------------------------ //
-    //  Create: Enchantment Industry (CEI)                                  //
-    //  CEI_PRINTER: active (fires when CEI is installed).                  //
-    //  All other CEI entries are Reserved — no events in v1.              //
-    // ------------------------------------------------------------------ //
-
-    /**
-     * CEI Grindstone drain (grinding + sandpaper polishing).
-     *
-     * <p><strong>Reserved — no events fired in v1.</strong>
-     * No mixin hook exists yet for CEI Grindstone. Filtering on this source
-     * will never match any event until explicit support is added.
-     */
+    // RESERVED, no events fired: no hook exists for the CEI Grindstone yet.
     CEI_GRINDSTONE,
 
-    /**
-     * CEI Printer (printing / enchantment-copy recipes) — <strong>FACTUAL ORIGIN</strong>.
-     *
-     * <p>Fired when the Printer completes a copy cycle: the countdown expires, all
-     * preconditions pass (valid entry, correct ink, sufficient quantity), and
-     * {@code Printing.print()} produces a non-empty output stack.
-     *
-     * <p>Only fired when Create Enchantment Industry is installed. Silently inactive
-     * without CEI ({@code @Mixin require = 0}).
-     *
-     * <p>{@link RecipeFinishedContext#getItemOutputs()} — the printed output item (1 entry).<br>
-     * {@link RecipeFinishedContext#getItemInputs()} — the consumed belt item (1 entry).<br>
-     * {@link RecipeFinishedContext#getBlockPos()} — the Printer block position.<br>
-     * {@link RecipeFinishedContext#getRecipe()} / {@link RecipeFinishedContext#getRecipeId()} — {@code null};
-     * CEI Printer does not use a vanilla {@link net.minecraft.world.item.crafting.Recipe} object.
-     */
+    // Printer from Create Enchantment Industry, fired only when CEI is installed.
+    // getRecipeId() is null: the Printer does not use a vanilla recipe object.
     CEI_PRINTER,
 
-    /**
-     * CEI Infuser — inherits {@link #BASIN} because the Infuser uses BasinRecipe.apply().
-     *
-     * <p>Events from the CEI Infuser arrive with source {@link #BASIN}, not this entry.
-     * This entry is reserved for a future finer-grained distinction if CEI Infuser
-     * receives its own dedicated hook.
-     *
-     * <p><strong>Reserved — no events fired in v1 with this source value.</strong>
-     */
+    // RESERVED, no events fired: CEI Infuser events arrive as BASIN.
     CEI_INFUSER,
 
-    /**
-     * CEI Salvaging fan processing type.
-     *
-     * <p>Salvaging events currently arrive via {@link #FAN_BLASTING} or
-     * {@link #FAN_SPLASHING} depending on the catalyst used.
-     * This entry is reserved for explicit future support.
-     *
-     * <p><strong>Reserved — no events fired in v1 with this source value.</strong>
-     */
+    // RESERVED, no events fired: CEI Salvaging events arrive as FAN_*.
     CEI_SALVAGING,
 
-    // ------------------------------------------------------------------ //
-    //  PowerGrid                                                           //
-    // ------------------------------------------------------------------ //
-
-    /**
-     * PowerGrid electromagnet magnetizing recipes.
-     *
-     * <p><strong>Reserved — no events fired in v1.</strong>
-     * No mixin hook exists yet for PowerGrid. Filtering on this source
-     * will never match any event until explicit support is added.
-     */
+    // RESERVED, no events fired: no hook exists for PowerGrid yet.
     POWERGRID_MAGNETIZING,
 
-    // ------------------------------------------------------------------ //
-    //  Fallback                                                            //
-    // ------------------------------------------------------------------ //
+    // Mechanical Drill, blockProcessed events only: one event per broken block, both stationary and on contraptions (BlockProcessedContext#isContraption()).
+    MECHANICAL_DRILL,
 
-    /**
-     * Catch-all for any recipe applied through {@code RecipeApplier.applyRecipeOn()}
-     * whose source could not be determined (e.g. unknown addons).
-     */
+    // Mechanical Harvester, blockProcessed events only: one event per harvested plant.
+    // The Harvester only operates on contraptions.
+    MECHANICAL_HARVESTER,
+
+    // Catch-all for unrecognized addon recipes going through RecipeApplier.
     UNKNOWN
 }
