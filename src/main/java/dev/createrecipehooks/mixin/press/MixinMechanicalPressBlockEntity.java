@@ -3,6 +3,7 @@ package dev.createrecipehooks.mixin.press;
 import com.simibubi.create.content.kinetics.press.MechanicalPressBlockEntity;
 import dev.createrecipehooks.api.ICrhOwnable;
 import dev.createrecipehooks.internal.CrhOwnerContext;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.UUID;
 
 // Owner tracking for the Mechanical Press. The UUID is carried through CrhOwnerContext around both processing paths (belt and world) so the shared RecipeApplier hook can attribute MECHANICAL_PRESS events.
+// The context wraps the whole method: on 1.21.1 the world path calls applyRecipeOn from two different branches.
 @Mixin(value = MechanicalPressBlockEntity.class, remap = false)
 public abstract class MixinMechanicalPressBlockEntity implements ICrhOwnable {
 
@@ -23,14 +25,14 @@ public abstract class MixinMechanicalPressBlockEntity implements ICrhOwnable {
     @Override public @Nullable UUID crh$getOwnerUUID() { return crh$ownerUUID; }
     @Override public void crh$setOwnerUUID(@Nullable UUID uuid) { this.crh$ownerUUID = uuid; }
 
-    @Inject(method = "write(Lnet/minecraft/nbt/CompoundTag;Z)V", at = @At("HEAD"))
-    private void crh$writeOwner(CompoundTag tag, boolean clientPacket, CallbackInfo ci) {
+    @Inject(method = "write(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/HolderLookup$Provider;Z)V", at = @At("HEAD"))
+    private void crh$writeOwner(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket, CallbackInfo ci) {
         if (!clientPacket && crh$ownerUUID != null)
             tag.putUUID("crh:owner", crh$ownerUUID);
     }
 
-    @Inject(method = "read(Lnet/minecraft/nbt/CompoundTag;Z)V", at = @At("HEAD"))
-    private void crh$readOwner(CompoundTag tag, boolean clientPacket, CallbackInfo ci) {
+    @Inject(method = "read(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/HolderLookup$Provider;Z)V", at = @At("HEAD"))
+    private void crh$readOwner(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket, CallbackInfo ci) {
         if (!clientPacket && tag.hasUUID("crh:owner"))
             crh$ownerUUID = tag.getUUID("crh:owner");
     }
@@ -40,13 +42,7 @@ public abstract class MixinMechanicalPressBlockEntity implements ICrhOwnable {
         method = "tryProcessOnBelt(" +
                  "Lcom/simibubi/create/content/kinetics/belt/transport/TransportedItemStack;" +
                  "Ljava/util/List;Z)Z",
-        at = @At(
-            value = "INVOKE",
-            target = "Lcom/simibubi/create/foundation/recipe/RecipeApplier;" +
-                     "applyRecipeOn(Lnet/minecraft/world/level/Level;" +
-                     "Lnet/minecraft/world/item/ItemStack;" +
-                     "Lnet/minecraft/world/item/crafting/Recipe;Z)Ljava/util/List;"
-        )
+        at = @At("HEAD")
     )
     private void crh$setBeltPressOwner(CallbackInfoReturnable<Boolean> cir) {
         CrhOwnerContext.set(crh$ownerUUID);
@@ -56,14 +52,7 @@ public abstract class MixinMechanicalPressBlockEntity implements ICrhOwnable {
         method = "tryProcessOnBelt(" +
                  "Lcom/simibubi/create/content/kinetics/belt/transport/TransportedItemStack;" +
                  "Ljava/util/List;Z)Z",
-        at = @At(
-            value = "INVOKE",
-            target = "Lcom/simibubi/create/foundation/recipe/RecipeApplier;" +
-                     "applyRecipeOn(Lnet/minecraft/world/level/Level;" +
-                     "Lnet/minecraft/world/item/ItemStack;" +
-                     "Lnet/minecraft/world/item/crafting/Recipe;Z)Ljava/util/List;",
-            shift = At.Shift.AFTER
-        )
+        at = @At("RETURN")
     )
     private void crh$clearBeltPressOwner(CallbackInfoReturnable<Boolean> cir) {
         CrhOwnerContext.clear();
@@ -72,13 +61,7 @@ public abstract class MixinMechanicalPressBlockEntity implements ICrhOwnable {
     // World mode.
     @Inject(
         method = "tryProcessInWorld(Lnet/minecraft/world/entity/item/ItemEntity;Z)Z",
-        at = @At(
-            value = "INVOKE",
-            target = "Lcom/simibubi/create/foundation/recipe/RecipeApplier;" +
-                     "applyRecipeOn(Lnet/minecraft/world/level/Level;" +
-                     "Lnet/minecraft/world/item/ItemStack;" +
-                     "Lnet/minecraft/world/item/crafting/Recipe;Z)Ljava/util/List;"
-        )
+        at = @At("HEAD")
     )
     private void crh$setWorldPressOwner(CallbackInfoReturnable<Boolean> cir) {
         CrhOwnerContext.set(crh$ownerUUID);
@@ -86,14 +69,7 @@ public abstract class MixinMechanicalPressBlockEntity implements ICrhOwnable {
 
     @Inject(
         method = "tryProcessInWorld(Lnet/minecraft/world/entity/item/ItemEntity;Z)Z",
-        at = @At(
-            value = "INVOKE",
-            target = "Lcom/simibubi/create/foundation/recipe/RecipeApplier;" +
-                     "applyRecipeOn(Lnet/minecraft/world/level/Level;" +
-                     "Lnet/minecraft/world/item/ItemStack;" +
-                     "Lnet/minecraft/world/item/crafting/Recipe;Z)Ljava/util/List;",
-            shift = At.Shift.AFTER
-        )
+        at = @At("RETURN")
     )
     private void crh$clearWorldPressOwner(CallbackInfoReturnable<Boolean> cir) {
         CrhOwnerContext.clear();

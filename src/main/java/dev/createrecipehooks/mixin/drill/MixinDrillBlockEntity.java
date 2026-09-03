@@ -8,6 +8,7 @@ import dev.createrecipehooks.api.RecipeSource;
 import dev.createrecipehooks.core.ContraptionOwner;
 import dev.createrecipehooks.core.RecipeEventDispatcher;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -35,15 +36,15 @@ public abstract class MixinDrillBlockEntity extends BlockBreakingKineticBlockEnt
     @Override public void crh$setOwnerUUID(@Nullable UUID uuid) { this.crh$ownerUUID = uuid; }
 
     @Override
-    public void write(CompoundTag tag, boolean clientPacket) {
-        super.write(tag, clientPacket);
+    public void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(tag, registries, clientPacket);
         if (!clientPacket && crh$ownerUUID != null)
             tag.putUUID(ContraptionOwner.NBT_KEY, crh$ownerUUID);
     }
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
-        super.read(tag, clientPacket);
+    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(tag, registries, clientPacket);
         if (!clientPacket && tag.hasUUID(ContraptionOwner.NBT_KEY))
             crh$ownerUUID = tag.getUUID(ContraptionOwner.NBT_KEY);
     }

@@ -3,7 +3,6 @@ package dev.createrecipehooks.mixin.crusher;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.simibubi.create.content.kinetics.crusher.CrushingWheelBlockEntity;
 import com.simibubi.create.content.kinetics.crusher.CrushingWheelControllerBlockEntity;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import dev.createrecipehooks.api.ICrhOwnable;
 import dev.createrecipehooks.api.RecipeFinishedContext;
 import dev.createrecipehooks.api.RecipeSource;
@@ -13,6 +12,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
@@ -48,7 +48,7 @@ public abstract class MixinCrushingWheelController {
     )
     private void crh$onCrushingApplied(
             CallbackInfo ci,
-            @Local(ordinal = 0) Optional<? extends ProcessingRecipe<?>> recipe,
+            @Local(ordinal = 0) Optional<RecipeHolder<?>> recipe,
             @Local(ordinal = 0) List<ItemStack> list
     ) {
         if (recipe == null || recipe.isEmpty()) return;
@@ -57,13 +57,11 @@ public abstract class MixinCrushingWheelController {
         Level level = self.getLevel();
         if (level == null || level.isClientSide()) return;
 
-        ProcessingRecipe<?> r = recipe.get();
         List<ItemStack> outputs = (list != null) ? List.copyOf(list) : List.of();
 
         RecipeFinishedContext.Builder builder = RecipeFinishedContext.of(RecipeSource.CRUSHING_WHEEL, level)
             .blockPos(self.getBlockPos())
-            .recipe(r)
-            .recipeId(r.getId())
+            .recipe(recipe.get())
             .itemOutputs(outputs);
 
         // Attribution priority: item thrower first, then the owner of an adjacent wheel.

@@ -5,16 +5,21 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.simibubi.create.content.kinetics.saw.SawBlockEntity;
 import com.simibubi.create.content.kinetics.saw.TreeCutter;
+import com.simibubi.create.content.processing.recipe.ProcessingInventory;
+import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import com.simibubi.create.foundation.utility.AbstractBlockBreakQueue;
 import dev.createrecipehooks.api.BlockProcessedContext;
 import dev.createrecipehooks.api.ICrhOwnable;
 import dev.createrecipehooks.api.RecipeFinishedContext;
 import dev.createrecipehooks.api.RecipeSource;
 import dev.createrecipehooks.core.RecipeEventDispatcher;
+import dev.createrecipehooks.internal.CrhOwnerContext;
+import dev.createrecipehooks.mixin.deployer.CrhProcessingRecipeAccessor;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -40,28 +45,42 @@ public abstract class MixinSawBlockEntity implements ICrhOwnable {
     @Override public @Nullable UUID crh$getOwnerUUID() { return crh$ownerUUID; }
     @Override public void crh$setOwnerUUID(@Nullable UUID uuid) { this.crh$ownerUUID = uuid; }
 
-    @Inject(method = "write(Lnet/minecraft/nbt/CompoundTag;Z)V", at = @At("HEAD"))
-    private void crh$saveOwner(CompoundTag tag, boolean clientPacket, CallbackInfo ci) {
+    @Inject(method = "write(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/HolderLookup$Provider;Z)V", at = @At("HEAD"))
+    private void crh$saveOwner(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket, CallbackInfo ci) {
         if (!clientPacket && crh$ownerUUID != null)
             tag.putUUID("crh:owner", crh$ownerUUID);
     }
 
-    @Inject(method = "read(Lnet/minecraft/nbt/CompoundTag;Z)V", at = @At("HEAD"))
-    private void crh$loadOwner(CompoundTag tag, boolean clientPacket, CallbackInfo ci) {
+    @Inject(method = "read(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/HolderLookup$Provider;Z)V", at = @At("HEAD"))
+    private void crh$loadOwner(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket, CallbackInfo ci) {
         if (!clientPacket)
             crh$ownerUUID = tag.hasUUID("crh:owner") ? tag.getUUID("crh:owner") : null;
     }
 
     @Shadow private int recipeIndex;
-    @Shadow public com.simibubi.create.content.processing.recipe.ProcessingInventory inventory;
+    @Shadow public ProcessingInventory inventory;
 
+    // The owner context covers applyRecipe so the Sequenced Assembly hook can
+    // attribute assembly completions from cutting steps.
+    @Inject(method = "applyRecipe()V", at = @At("HEAD"))
+    private void crh$setOwnerContext(CallbackInfo ci) {
+        CrhOwnerContext.set(crh$ownerUUID);
+    }
+
+    @Inject(method = "applyRecipe()V", at = @At("RETURN"))
+    private void crh$clearOwnerContext(CallbackInfo ci) {
+        CrhOwnerContext.clear();
+    }
+
+    // The third return is the end of the recipe-processing path; the first two are
+    // the package-splitting branch and the no-recipes branch.
     @Inject(
         method = "applyRecipe()V",
         at = @At(value = "RETURN", ordinal = 2)
     )
     private void crh$onSawApplied(
             CallbackInfo ci,
-            @Local(ordinal = 1) List<? extends Recipe<?>> recipes
+            @Local(ordinal = 1) List<? extends RecipeHolder<?>> recipes
     ) {
         SawBlockEntity self = (SawBlockEntity)(Object)this;
         Level level = self.getLevel();
@@ -71,7 +90,12 @@ public abstract class MixinSawBlockEntity implements ICrhOwnable {
         int idx = recipeIndex;
         if (idx < 0 || idx >= recipes.size()) return;
 
-        Recipe<?> recipe = recipes.get(idx);
+        RecipeHolder<?> recipe = recipes.get(idx);
+
+        // Sequenced Assembly cutting steps stay silent, the assembly fires its own event.
+        if (recipe.value() instanceof ProcessingRecipe<?, ?>
+                && ((CrhProcessingRecipeAccessor) recipe.value()).crh$getForcedResult() != null)
+            return;
 
         List<ItemStack> outputs = new java.util.ArrayList<>();
         for (int s = 1; s < inventory.getSlots(); s++) {
@@ -82,7 +106,6 @@ public abstract class MixinSawBlockEntity implements ICrhOwnable {
         RecipeFinishedContext.Builder builder = RecipeFinishedContext.of(RecipeSource.MECHANICAL_SAW, level)
             .blockPos(self.getBlockPos())
             .recipe(recipe)
-            .recipeId(recipe.getId())
             .itemOutputs(outputs);
 
         if (crh$ownerUUID != null) {

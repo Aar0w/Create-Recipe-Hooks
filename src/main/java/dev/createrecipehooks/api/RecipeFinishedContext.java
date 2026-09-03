@@ -5,6 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -130,10 +131,19 @@ public final class RecipeFinishedContext {
             return this;
         }
 
-        // Sets both the recipe and its id.
+        // Sets both the recipe and its id from a RecipeHolder.
+        public Builder recipe(@NotNull RecipeHolder<?> holder) {
+            this.recipe   = holder.value();
+            this.recipeId = holder.id();
+            return this;
+        }
+
+        // Sets the recipe object. Since 1.21 recipes no longer know their own id,
+        // it is resolved through a reverse lookup unless recipeId() sets one explicitly.
         public Builder recipe(@NotNull Recipe<?> r) {
-            this.recipe   = r;
-            this.recipeId = r.getId();
+            this.recipe = r;
+            if (this.recipeId == null)
+                this.recipeId = dev.createrecipehooks.core.RecipeIdLookup.idOf(level, r);
             return this;
         }
 

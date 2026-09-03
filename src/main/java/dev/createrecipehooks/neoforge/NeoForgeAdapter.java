@@ -15,16 +15,14 @@ import dev.createrecipehooks.api.ICrhOwnable;
 import dev.createrecipehooks.api.IRecipeFinishedListener;
 import dev.createrecipehooks.api.RecipeFinishedContext;
 import dev.createrecipehooks.core.RecipeEventDispatcher;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.level.BlockEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.level.BlockEvent;
 
-// Forge adapter: bridges the dispatcher to the Forge event bus and records machine owners on block placement.
+// NeoForge adapter: bridges the dispatcher to the NeoForge event bus and records machine owners on block placement.
 public final class NeoForgeAdapter implements IRecipeFinishedListener {
 
     public static final NeoForgeAdapter INSTANCE = new NeoForgeAdapter();
@@ -33,7 +31,7 @@ public final class NeoForgeAdapter implements IRecipeFinishedListener {
 
     @Override
     public void onRecipeFinished(RecipeFinishedContext ctx) {
-        MinecraftForge.EVENT_BUS.post(new CreateRecipeFinishedEvent(ctx));
+        NeoForge.EVENT_BUS.post(new CreateRecipeFinishedEvent(ctx));
     }
 
     // Stores the placer's UUID on every tracked machine.
@@ -63,21 +61,17 @@ public final class NeoForgeAdapter implements IRecipeFinishedListener {
         if (block instanceof DrillBlock)            return true;
         if (block instanceof HarvesterBlock)        return true;
         // Deployer is skipped: Create sets its own owner field on placement.
-
-        // CEI Printer is matched by registry name to avoid a hard CEI dependency.
-        ResourceLocation key = ForgeRegistries.BLOCKS.getKey(block);
-        return key != null
-            && "create_enchantment_industry".equals(key.getNamespace())
-            && "printer".equals(key.getPath());
+        // CEI has no 1.21.1 port, so the Printer check from 1.20.1 is gone.
+        return false;
     }
 
     // Wires this adapter into the dispatch chain. Called once from the mod constructor.
     public static void register() {
         RecipeEventDispatcher.registerListener(INSTANCE);
         RecipeEventDispatcher.registerBlockProcessedListener(
-            ctx -> MinecraftForge.EVENT_BUS.post(new CreateBlockProcessedEvent(ctx)));
+            ctx -> NeoForge.EVENT_BUS.post(new CreateBlockProcessedEvent(ctx)));
         RecipeEventDispatcher.registerTreeCutListener(
-            ctx -> MinecraftForge.EVENT_BUS.post(new CreateTreeCutEvent(ctx)));
-        MinecraftForge.EVENT_BUS.register(NeoForgeAdapter.class); // onOwnableBlockPlaced
+            ctx -> NeoForge.EVENT_BUS.post(new CreateTreeCutEvent(ctx)));
+        NeoForge.EVENT_BUS.register(NeoForgeAdapter.class); // onOwnableBlockPlaced
     }
 }

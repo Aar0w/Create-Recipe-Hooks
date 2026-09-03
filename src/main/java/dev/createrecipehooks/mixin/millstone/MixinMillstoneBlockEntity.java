@@ -8,7 +8,9 @@ import dev.createrecipehooks.api.ICrhOwnable;
 import dev.createrecipehooks.api.RecipeFinishedContext;
 import dev.createrecipehooks.api.RecipeSource;
 import dev.createrecipehooks.core.RecipeEventDispatcher;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
@@ -30,14 +32,14 @@ public abstract class MixinMillstoneBlockEntity implements ICrhOwnable {
     @Override public @Nullable UUID crh$getOwnerUUID() { return crh$ownerUUID; }
     @Override public void crh$setOwnerUUID(@Nullable UUID uuid) { this.crh$ownerUUID = uuid; }
 
-    @Inject(method = "write(Lnet/minecraft/nbt/CompoundTag;Z)V", at = @At("HEAD"))
-    private void crh$saveOwner(CompoundTag tag, boolean clientPacket, CallbackInfo ci) {
+    @Inject(method = "write(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/HolderLookup$Provider;Z)V", at = @At("HEAD"))
+    private void crh$saveOwner(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket, CallbackInfo ci) {
         if (!clientPacket && crh$ownerUUID != null)
             tag.putUUID("crh:owner", crh$ownerUUID);
     }
 
-    @Inject(method = "read(Lnet/minecraft/nbt/CompoundTag;Z)V", at = @At("HEAD"))
-    private void crh$loadOwner(CompoundTag tag, boolean clientPacket, CallbackInfo ci) {
+    @Inject(method = "read(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/HolderLookup$Provider;Z)V", at = @At("HEAD"))
+    private void crh$loadOwner(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket, CallbackInfo ci) {
         if (!clientPacket)
             crh$ownerUUID = tag.hasUUID("crh:owner") ? tag.getUUID("crh:owner") : null;
     }
@@ -47,14 +49,15 @@ public abstract class MixinMillstoneBlockEntity implements ICrhOwnable {
         at = @At(
             value = "INVOKE",
             target = "Lcom/simibubi/create/content/kinetics/millstone/MillingRecipe;" +
-                     "rollResults()Ljava/util/List;"
+                     "rollResults(Lnet/minecraft/util/RandomSource;)Ljava/util/List;"
         )
     )
     private List<ItemStack> crh$onMillstoneProcess(
             MillingRecipe recipe,
+            RandomSource random,
             Operation<List<ItemStack>> original
     ) {
-        List<ItemStack> results = original.call(recipe);
+        List<ItemStack> results = original.call(recipe, random);
 
         MillstoneBlockEntity self = (MillstoneBlockEntity)(Object)this;
         Level level = self.getLevel();

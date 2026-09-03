@@ -1,11 +1,14 @@
 package dev.createrecipehooks.mixin.fan;
 
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.AllRecipeTypes;
+import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import com.simibubi.create.foundation.recipe.RecipeApplier;
 import dev.createrecipehooks.api.RecipeFinishedContext;
 import dev.createrecipehooks.api.RecipeSource;
 import dev.createrecipehooks.core.RecipeEventDispatcher;
 import dev.createrecipehooks.internal.CrhOwnerContext;
+import dev.createrecipehooks.mixin.deployer.CrhProcessingRecipeAccessor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -28,8 +31,7 @@ public abstract class MixinRecipeApplier {
         method = "applyRecipeOn(Lnet/minecraft/world/level/Level;" +
                  "Lnet/minecraft/world/item/ItemStack;" +
                  "Lnet/minecraft/world/item/crafting/Recipe;Z)Ljava/util/List;",
-        at = @At("RETURN"),
-        remap = false
+        at = @At("RETURN")
     )
     private static void crh$onRecipeApplied(
             Level level,
@@ -42,10 +44,15 @@ public abstract class MixinRecipeApplier {
         if (outputs == null || outputs.isEmpty()) return;
         if (level == null || level.isClientSide()) return;
 
+        // Sequenced Assembly steps carry a forced result and stay silent here,
+        // the assembly fires its own event.
+        if (recipe instanceof ProcessingRecipe<?, ?>
+                && ((CrhProcessingRecipeAccessor) recipe).crh$getForcedResult() != null)
+            return;
+
         // Skip Sequenced Assembly transitional items; the final step fires its own event.
         for (ItemStack out : outputs) {
-            if (!out.isEmpty()
-                    && out.hasTag() && out.getOrCreateTag().contains("SequencedAssembly")) {
+            if (!out.isEmpty() && out.has(AllDataComponents.SEQUENCED_ASSEMBLY)) {
                 return;
             }
         }

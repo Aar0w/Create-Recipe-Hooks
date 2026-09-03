@@ -5,18 +5,16 @@ import dev.createrecipehooks.api.IHookProvider;
 import dev.createrecipehooks.internal.debug.CrhDebugLogger;
 import dev.createrecipehooks.internal.debug.DebugListener;
 import dev.createrecipehooks.neoforge.NeoForgeAdapter;
-import net.minecraftforge.fml.IExtensionPoint;
-import net.minecraftforge.fml.InterModComms;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.network.NetworkConstants;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.InterModComms;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-// Mod entry point (Forge).
-// Wires the dispatcher into the Forge event bus and lets addons register IHookProvider instances via IMC message register_hook_provider.
+// Mod entry point (NeoForge 1.21.1).
+// Wires the dispatcher into the NeoForge event bus and lets addons register IHookProvider instances via IMC message register_hook_provider.
+// Server-side only: NeoForge checks clients by network payloads, not by mod list, so clients without this mod can join.
 @Mod(CreateRecipeHooksMod.MOD_ID)
 public class CreateRecipeHooksMod {
 
@@ -27,20 +25,10 @@ public class CreateRecipeHooksMod {
 
     private static final boolean DEBUG_LOGGING = Boolean.getBoolean("crh.debug");
 
-    public CreateRecipeHooksMod() {
-        // Server-side only: clients without this mod can join servers that have it.
-        ModLoadingContext.get().registerExtensionPoint(
-            IExtensionPoint.DisplayTest.class,
-            () -> new IExtensionPoint.DisplayTest(
-                () -> NetworkConstants.IGNORESERVERONLY,
-                (remoteVersion, isFromServer) -> true
-            )
-        );
-
+    public CreateRecipeHooksMod(IEventBus modBus) {
         NeoForgeAdapter.register();
 
-        FMLJavaModLoadingContext.get().getModEventBus()
-                .addListener(this::processIMC);
+        modBus.addListener(this::processIMC);
 
         if (DEBUG_LOGGING) {
             CrhDebugLogger.init();

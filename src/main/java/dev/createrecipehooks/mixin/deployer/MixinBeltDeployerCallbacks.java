@@ -4,10 +4,12 @@ import com.simibubi.create.content.kinetics.belt.behaviour.TransportedItemStackH
 import com.simibubi.create.content.kinetics.belt.transport.TransportedItemStack;
 import com.simibubi.create.content.kinetics.deployer.BeltDeployerCallbacks;
 import com.simibubi.create.content.kinetics.deployer.DeployerBlockEntity;
+import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import dev.createrecipehooks.api.ICrhOwnable;
 import dev.createrecipehooks.api.RecipeFinishedContext;
 import dev.createrecipehooks.api.RecipeSource;
 import dev.createrecipehooks.core.RecipeEventDispatcher;
+import dev.createrecipehooks.internal.CrhOwnerContext;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,6 +23,28 @@ import java.util.UUID;
 // Deployer recipe types are excluded from the shared RecipeApplier hook so the event fires exactly once.
 @Mixin(value = BeltDeployerCallbacks.class, remap = false)
 public abstract class MixinBeltDeployerCallbacks {
+
+    // The owner context covers the whole activate call so the Sequenced Assembly hook
+    // can attribute assembly completions happening inside it.
+    @Inject(
+        method = "activate(" +
+                 "Lcom/simibubi/create/content/kinetics/belt/transport/TransportedItemStack;" +
+                 "Lcom/simibubi/create/content/kinetics/belt/behaviour/TransportedItemStackHandlerBehaviour;" +
+                 "Lcom/simibubi/create/content/kinetics/deployer/DeployerBlockEntity;" +
+                 "Lnet/minecraft/world/item/crafting/Recipe;" +
+                 ")V",
+        at = @At("HEAD")
+    )
+    private static void crh$setOwnerContext(
+            TransportedItemStack stack,
+            TransportedItemStackHandlerBehaviour handler,
+            DeployerBlockEntity deployer,
+            Recipe<?> recipe,
+            CallbackInfo ci
+    ) {
+        if (deployer instanceof ICrhOwnable ownable)
+            CrhOwnerContext.set(ownable.crh$getOwnerUUID());
+    }
 
     @Inject(
         method = "activate(" +
@@ -38,18 +62,28 @@ public abstract class MixinBeltDeployerCallbacks {
             Recipe<?> recipe,
             CallbackInfo ci
     ) {
-        Level level = deployer.getLevel();
-        if (level == null || level.isClientSide()) return;
+        try {
+            // Sequenced Assembly wraps its steps as deployer recipes and marks them with a
+            // forced result; those steps stay silent, the assembly fires its own event.
+            if (recipe instanceof ProcessingRecipe<?, ?>
+                    && ((CrhProcessingRecipeAccessor) recipe).crh$getForcedResult() != null)
+                return;
 
-        UUID ownerUUID = (deployer instanceof ICrhOwnable ownable)
-                ? ownable.crh$getOwnerUUID() : null;
+            Level level = deployer.getLevel();
+            if (level == null || level.isClientSide()) return;
 
-        RecipeFinishedContext.Builder builder =
-                RecipeFinishedContext.of(RecipeSource.DEPLOYER_BELT, level)
-                        .recipe(recipe);
+            UUID ownerUUID = (deployer instanceof ICrhOwnable ownable)
+                    ? ownable.crh$getOwnerUUID() : null;
 
-        if (ownerUUID != null) builder.meta("createrecipehooks:owner_uuid", ownerUUID.toString());
+            RecipeFinishedContext.Builder builder =
+                    RecipeFinishedContext.of(RecipeSource.DEPLOYER_BELT, level)
+                            .recipe(recipe);
 
-        RecipeEventDispatcher.dispatch(builder.build());
+            if (ownerUUID != null) builder.meta("createrecipehooks:owner_uuid", ownerUUID.toString());
+
+            RecipeEventDispatcher.dispatch(builder.build());
+        } finally {
+            CrhOwnerContext.clear();
+        }
     }
 }

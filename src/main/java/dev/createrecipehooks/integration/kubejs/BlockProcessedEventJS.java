@@ -1,7 +1,7 @@
 package dev.createrecipehooks.integration.kubejs;
 
 import dev.createrecipehooks.api.BlockProcessedContext;
-import dev.latvian.mods.kubejs.event.EventJS;
+import dev.latvian.mods.kubejs.event.KubeEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.UUID;
 
 // Script-facing wrapper for CRHEvents.blockProcessed. Not cancellable, the block is already gone when this fires.
-public class BlockProcessedEventJS extends EventJS {
+public class BlockProcessedEventJS implements KubeEvent {
 
     public static final String OWNER_UUID_KEY = "createrecipehooks:owner_uuid";
 

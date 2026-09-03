@@ -12,9 +12,10 @@ import dev.createrecipehooks.internal.CrhOwnerContext;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -49,15 +50,16 @@ public abstract class MixinGenericItemEmptying {
         at = @At(
             value = "INVOKE",
             target = "Lcom/simibubi/create/content/fluids/transfer/EmptyingRecipe;" +
-                     "rollResults()Ljava/util/List;"
+                     "rollResults(Lnet/minecraft/util/RandomSource;)Ljava/util/List;"
         )
     )
     private static List<ItemStack> crh$captureEmptyingRecipe(
             EmptyingRecipe recipe,
+            RandomSource random,
             Operation<List<ItemStack>> original
     ) {
         CAPTURED_RECIPE.set(recipe);
-        return original.call(recipe);
+        return original.call(recipe, random);
     }
 
     @Inject(

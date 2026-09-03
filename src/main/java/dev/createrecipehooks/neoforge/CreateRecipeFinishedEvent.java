@@ -9,15 +9,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.eventbus.api.Event;
+import net.neoforged.bus.api.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
 
-// Forge event fired whenever a Create (or addon) recipe completes.
-// Posted on the Forge event bus (the game bus, not the mod bus), server side only.
+// NeoForge event fired whenever a Create (or addon) recipe completes.
+// Posted on the game event bus (not the mod bus), server side only.
 public final class CreateRecipeFinishedEvent extends Event {
 
     private final RecipeFinishedContext context;

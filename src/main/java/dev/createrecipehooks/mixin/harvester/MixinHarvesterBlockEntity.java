@@ -5,6 +5,7 @@ import com.simibubi.create.foundation.blockEntity.CachedRenderBBBlockEntity;
 import dev.createrecipehooks.api.ICrhOwnable;
 import dev.createrecipehooks.core.ContraptionOwner;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -29,15 +30,15 @@ public abstract class MixinHarvesterBlockEntity extends CachedRenderBBBlockEntit
     @Override public void crh$setOwnerUUID(@Nullable UUID uuid) { this.crh$ownerUUID = uuid; }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
         if (crh$ownerUUID != null)
             tag.putUUID(ContraptionOwner.NBT_KEY, crh$ownerUUID);
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         if (tag.hasUUID(ContraptionOwner.NBT_KEY))
             crh$ownerUUID = tag.getUUID(ContraptionOwner.NBT_KEY);
     }

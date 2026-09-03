@@ -9,8 +9,11 @@ import dev.createrecipehooks.api.RecipeFinishedContext;
 import dev.createrecipehooks.api.RecipeSource;
 import dev.createrecipehooks.core.RecipeEventDispatcher;
 import dev.createrecipehooks.internal.CrhOwnerContext;
+import dev.createrecipehooks.mixin.deployer.CrhProcessingRecipeAccessor;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -24,25 +27,29 @@ public abstract class MixinFillingBySpout {
     @WrapOperation(
         method = "fillItem(Lnet/minecraft/world/level/Level;" +
                  "ILnet/minecraft/world/item/ItemStack;" +
-                 "Lnet/minecraftforge/fluids/FluidStack;)Lnet/minecraft/world/item/ItemStack;",
+                 "Lnet/neoforged/neoforge/fluids/FluidStack;)Lnet/minecraft/world/item/ItemStack;",
         at = @At(
             value = "INVOKE",
             target = "Lcom/simibubi/create/content/fluids/transfer/FillingRecipe;" +
-                     "rollResults()Ljava/util/List;"
+                     "rollResults(Lnet/minecraft/util/RandomSource;)Ljava/util/List;"
         )
     )
     private static List<ItemStack> crh$onFillingBySpout(
             FillingRecipe recipe,
+            RandomSource random,
             Operation<List<ItemStack>> original,
             @Local(argsOnly = true) Level level,
             @Local(argsOnly = true) ItemStack stack
     ) {
-        List<ItemStack> results = original.call(recipe);
+        List<ItemStack> results = original.call(recipe, random);
+
+        // Sequenced Assembly filling steps stay silent, the assembly fires its own event.
+        if (((CrhProcessingRecipeAccessor) (Object) recipe).crh$getForcedResult() != null)
+            return results;
 
         if (level != null && !level.isClientSide() && !results.isEmpty()) {
             RecipeFinishedContext.Builder builder = RecipeFinishedContext.of(RecipeSource.SPOUT_FILLING, level)
                 .recipe(recipe)
-                .recipeId(recipe.getId())
                 .itemOutputs(results)
                 .itemInputs(List.of(stack.copy()));
 
@@ -59,20 +66,20 @@ public abstract class MixinFillingBySpout {
     @WrapOperation(
         method = "fillItem(Lnet/minecraft/world/level/Level;" +
                  "ILnet/minecraft/world/item/ItemStack;" +
-                 "Lnet/minecraftforge/fluids/FluidStack;)Lnet/minecraft/world/item/ItemStack;",
+                 "Lnet/neoforged/neoforge/fluids/FluidStack;)Lnet/minecraft/world/item/ItemStack;",
         at = @At(
             value = "INVOKE",
             target = "Lcom/simibubi/create/content/fluids/transfer/GenericItemFilling;" +
                      "fillItem(Lnet/minecraft/world/level/Level;" +
                      "ILnet/minecraft/world/item/ItemStack;" +
-                     "Lnet/minecraftforge/fluids/FluidStack;)Lnet/minecraft/world/item/ItemStack;"
+                     "Lnet/neoforged/neoforge/fluids/FluidStack;)Lnet/minecraft/world/item/ItemStack;"
         )
     )
     private static ItemStack crh$onCapabilityFilling(
             Level level,
             int requiredAmount,
             ItemStack stack,
-            net.minecraftforge.fluids.FluidStack fluid,
+            FluidStack fluid,
             Operation<ItemStack> original
     ) {
         ItemStack input = stack.copy();

@@ -7,14 +7,13 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.List;
 
-// Read access to TreeCutter.Tree's private block lists.
-// Used by the saw mixins to distinguish a felled tree (non-empty logs) from a lone cut block, and to report the exact tree size without intercepting drops.
+// Read access to the private log and leaf lists of a found tree, used to size treeCut events.
 @Mixin(value = TreeCutter.Tree.class, remap = false)
 public interface CrhTreeAccessor {
 
-    @Accessor("logs")
+    @Accessor(value = "logs", remap = false)
     List<BlockPos> crh$getLogs();
 
-    @Accessor("leaves")
+    @Accessor(value = "leaves", remap = false)
     List<BlockPos> crh$getLeaves();
 }

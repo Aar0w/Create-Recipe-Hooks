@@ -6,15 +6,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.eventbus.api.Event;
+import net.neoforged.bus.api.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-// Forge event fired when a Mechanical Saw fells a whole tree: one event per tree, with log and leaf counts.
+// NeoForge event fired when a Mechanical Saw fells a whole tree: one event per tree, with log and leaf counts.
 // Lone blocks fire CreateBlockProcessedEvent instead.
-// Posted on the Forge event bus, server side only.
+// Posted on the game event bus, server side only.
 public final class CreateTreeCutEvent extends Event {
 
     private final BlockProcessedContext context;

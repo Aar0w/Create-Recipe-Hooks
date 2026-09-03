@@ -2,7 +2,7 @@ package dev.createrecipehooks.integration.kubejs;
 
 import dev.createrecipehooks.api.FluidAmount;
 import dev.createrecipehooks.api.RecipeFinishedContext;
-import dev.latvian.mods.kubejs.event.EventJS;
+import dev.latvian.mods.kubejs.event.KubeEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.UUID;
 
 // Script-facing wrapper for CRHEvents.recipeFinished. Not cancellable, the recipe has already been applied when this fires.
-public class RecipeFinishedEventJS extends EventJS {
+public class RecipeFinishedEventJS implements KubeEvent {
 
     public static final String OWNER_UUID_KEY = "createrecipehooks:owner_uuid";
 
